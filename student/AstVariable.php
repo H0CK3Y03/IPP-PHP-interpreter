@@ -1,13 +1,9 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
+namespace IPP\Student;
 
-namespace IPP\Student\AstTree;
-
-use IPP\Student\Sol25\SolClass;
-use IPP\Student\Sol25\SolObject;
+use IPP\Student\SolClass;
+use IPP\Student\SolObject;
 use IPP\Student\Scopes;
 
 class AstVariable

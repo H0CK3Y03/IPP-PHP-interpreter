@@ -1,22 +1,18 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
-namespace IPP\Student\Sol25;
+namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\AstTree\AstBlock;
-use IPP\Student\AstTree\AstLiteral;
-use IPP\Student\AstTree\AstMessage;
-use IPP\Student\AstTree\AstMethod;
-use IPP\Student\AstTree\AstVariable;
-use IPP\Student\Sol25\SolObjectClass;
+use IPP\Student\AstBlock;
+use IPP\Student\AstLiteral;
+use IPP\Student\AstMessage;
+use IPP\Student\AstMethod;
+use IPP\Student\AstVariable;
+use IPP\Student\SolObjectClass;
 use IPP\Student\InterDException;
 use IPP\Student\Scopes;
 
-class SolFalseClass extends SolObjectClass
+class SolTrueClass extends SolObjectClass
 {
     /**
      * @param array<AstMessage|AstLiteral|AstBlock|AstVariable|AstMethod|SolObject> $senderObjects
@@ -29,7 +25,7 @@ class SolFalseClass extends SolObjectClass
 
         switch ($selectorName) {
             case 'new':
-                return $scope->getSingleton('false');
+                return $scope->getSingleton('true');
             case 'identicalTo:':
                 return $this->boolResult($receiverObject->class === $senderObjects[0]->evaluate($scope)->class, $scope);
             case 'equalTo:':
@@ -46,11 +42,11 @@ class SolFalseClass extends SolObjectClass
             case 'isNil':
                 return $scope->getSingleton('false');
             case 'not':
-                return $scope->getSingleton('true');
-            case 'and:':
                 return $scope->getSingleton('false');
-            case 'or:':
+            case 'and:':
                 return $senderObjects[0]->evaluate($scope);
+            case 'or:':
+                return $scope->getSingleton('true');
             case 'ifTrue:ifFalse:':
                 if ($receiverObject->class instanceof SolTrueClass) {
                     return $senderObjects[0]->evaluate($scope);

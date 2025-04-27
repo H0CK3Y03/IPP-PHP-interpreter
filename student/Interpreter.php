@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
 namespace IPP\Student;
 
 use IPP\Core\Exception\IPPException;

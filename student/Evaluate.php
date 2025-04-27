@@ -1,13 +1,9 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\Sol25\SolObject;
+use IPP\Student\SolObject;
 use IPP\Student\Scopes;
 
 class Evaluate

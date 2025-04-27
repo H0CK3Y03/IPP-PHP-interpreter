@@ -1,12 +1,8 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
+namespace IPP\Student;
 
-namespace IPP\Student\Sol25;
-
-use IPP\Student\AstTree\AstBlock;
+use IPP\Student\AstBlock;
 
 class SolMethod
 {

@@ -1,16 +1,12 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
 namespace IPP\Student;
 
 use IPP\Core\Exception\IPPException;
 use IPP\Core\ReturnCode;
 use IPP\Core\StreamWriter;
-use IPP\Student\Sol25\SolClass;
-use IPP\Student\Sol25\SolObject;
+use IPP\Student\SolClass;
+use IPP\Student\SolObject;
 use IPP\Student\InterDException;
 
 class Scopes

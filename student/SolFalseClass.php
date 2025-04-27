@@ -1,25 +1,20 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
-namespace IPP\Student\Sol25;
+namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\AstTree\AstBlock;
-use IPP\Student\AstTree\AstLiteral;
-use IPP\Student\AstTree\AstMessage;
-use IPP\Student\AstTree\AstMethod;
-use IPP\Student\AstTree\AstVariable;
-use IPP\Student\Sol25\SolClass;
-use IPP\Student\Sol25\SolObject;
+use IPP\Student\AstBlock;
+use IPP\Student\AstLiteral;
+use IPP\Student\AstMessage;
+use IPP\Student\AstMethod;
+use IPP\Student\AstVariable;
+use IPP\Student\SolObjectClass;
 use IPP\Student\InterDException;
 use IPP\Student\Scopes;
 
-class SolObjectClass extends SolClass
+class SolFalseClass extends SolObjectClass
 {
-    /** Handles method calls based on selector names and return object
+    /**
      * @param array<AstMessage|AstLiteral|AstBlock|AstVariable|AstMethod|SolObject> $senderObjects
      * @return SolObject
      */
@@ -29,6 +24,8 @@ class SolObjectClass extends SolClass
         $receiverValue = $receiverObject->getAttr('__value__');
 
         switch ($selectorName) {
+            case 'new':
+                return $scope->getSingleton('false');
             case 'identicalTo:':
                 return $this->boolResult($receiverObject->class === $senderObjects[0]->evaluate($scope)->class, $scope);
             case 'equalTo:':
@@ -44,13 +41,21 @@ class SolObjectClass extends SolClass
                 return $scope->getSingleton('false');
             case 'isNil':
                 return $scope->getSingleton('false');
+            case 'not':
+                return $scope->getSingleton('true');
+            case 'and:':
+                return $scope->getSingleton('false');
+            case 'or:':
+                return $senderObjects[0]->evaluate($scope);
+            case 'ifTrue:ifFalse:':
+                if ($receiverObject->class instanceof SolTrueClass) {
+                    return $senderObjects[0]->evaluate($scope);
+                }
+                if ($receiverObject->class instanceof SolFalseClass) {
+                    return $senderObjects[1]->evaluate($scope);
+                }
             default:
                 throw new InterDException('Method not found', ReturnCode::INTERPRET_TYPE_ERROR);
         }
-    }
-
-    public function boolResult(bool $value, Scopes $scope): SolObject
-    {
-        return $scope->getSingleton($value ? 'true' : 'false');
     }
 }

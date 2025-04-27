@@ -1,20 +1,16 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\AstTree\AstAssignment;
-use IPP\Student\AstTree\AstBlock;
-use IPP\Student\AstTree\AstClassDefinition;
-use IPP\Student\AstTree\AstLiteral;
-use IPP\Student\AstTree\AstMessage;
-use IPP\Student\AstTree\AstMethod;
-use IPP\Student\AstTree\AstProgram;
-use IPP\Student\AstTree\AstVariable;
+use IPP\Student\AstAssignment;
+use IPP\Student\AstBlock;
+use IPP\Student\AstClassDefinition;
+use IPP\Student\AstLiteral;
+use IPP\Student\AstMessage;
+use IPP\Student\AstMethod;
+use IPP\Student\AstProgram;
+use IPP\Student\AstVariable;
 use DOMDocument;
 use DOMElement;
 

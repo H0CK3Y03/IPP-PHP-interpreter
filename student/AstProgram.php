@@ -1,10 +1,6 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
-namespace IPP\Student\AstTree;
+namespace IPP\Student;
 
 class AstProgram
 {

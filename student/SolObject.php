@@ -1,16 +1,12 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
+namespace IPP\Student;
 
-namespace IPP\Student\Sol25;
-
-use IPP\Student\AstTree\AstBlock;
-use IPP\Student\AstTree\AstLiteral;
-use IPP\Student\AstTree\AstMessage;
-use IPP\Student\AstTree\AstMethod;
-use IPP\Student\AstTree\AstVariable;
+use IPP\Student\AstBlock;
+use IPP\Student\AstLiteral;
+use IPP\Student\AstMessage;
+use IPP\Student\AstMethod;
+use IPP\Student\AstVariable;
 use IPP\Student\Scopes;
 use IPP\Student\InterDException;
 use IPP\Core\ReturnCode;

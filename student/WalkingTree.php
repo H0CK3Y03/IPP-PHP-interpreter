@@ -1,23 +1,19 @@
 <?php
 
-/**
- * @author Miroslav Basista (xbasism00)
- */
-
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\AstTree\AstProgram;
-use IPP\Student\Sol25\SolBlockClass;
-use IPP\Student\Sol25\SolClass;
-use IPP\Student\Sol25\SolFalseClass;
-use IPP\Student\Sol25\SolIntegerClass;
-use IPP\Student\Sol25\SolMethod;
-use IPP\Student\Sol25\SolNilClass;
-use IPP\Student\Sol25\SolObject;
-use IPP\Student\Sol25\SolObjectClass;
-use IPP\Student\Sol25\SolStringClass;
-use IPP\Student\Sol25\SolTrueClass;
+use IPP\Student\AstProgram;
+use IPP\Student\SolBlockClass;
+use IPP\Student\SolClass;
+use IPP\Student\SolFalseClass;
+use IPP\Student\SolIntegerClass;
+use IPP\Student\SolMethod;
+use IPP\Student\SolNilClass;
+use IPP\Student\SolObject;
+use IPP\Student\SolObjectClass;
+use IPP\Student\SolStringClass;
+use IPP\Student\SolTrueClass;
 use IPP\Student\Scopes;
 
 class WalkingTree
