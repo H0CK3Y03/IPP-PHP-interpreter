@@ -14,70 +14,97 @@ use IPP\Student\Variable;
 use DOMDocument;
 use DOMElement;
 
+/**
+ * Parses XML data into the internal structure of a program, including classes, methods, blocks, and expressions.
+ */
 class Parser
 {
-    // Parse the root <program> and create an Program
+    /**
+     * Creates a Program object from a DOMDocument.
+     *
+     * @param DOMDocument $dom The DOMDocument containing the XML data.
+     * @return Program The parsed Program object.
+     */
     public function createProgram(DOMDocument $dom): Program
     {
         $program = new Program();
 
-        // Iterate over all <class> elements
-        $classes = $dom->getElementsByTagName('class');
-        foreach ($classes as $class) {
-            $c = new ClassDefinition(
+        // Parse all <class> elements and add them to the program
+        foreach ($dom->getElementsByTagName('class') as $class) {
+            $classDefinition = new ClassDefinition(
                 $class->getAttribute('name'),
                 $class->getAttribute('parent')
             );
 
-            // Iterate over all <method> elements inside the class
-            $methods = $class->getElementsByTagName('method');
-            foreach ($methods as $method) {
-                $block = $method->getElementsByTagName('block')->item(0);
-                if ($block !== null) {
-                    // Create an Method with selector and parsed block
-                    $m = new Method(
+            // Parse <method> elements inside the class
+            foreach ($class->getElementsByTagName('method') as $method) {
+                $blockNode = $method->getElementsByTagName('block')->item(0);
+                if ($blockNode) {
+                    $methodDefinition = new Method(
                         $method->getAttribute('selector'),
-                        $this->createBlock($block)
+                        $this->createBlock($blockNode)
                     );
-                    $c->addMethod($m);
+                    $classDefinition->addMethod($methodDefinition);
                 }
             }
 
-            // Add class to the program
-            $program->addClass($c);
+            $program->addClass($classDefinition);
         }
 
         return $program;
     }
 
-    // Parse a <block> node and return an Block
-    public function createBlock(DOMElement $block_node): Block
+    /**
+     * Creates a Block object from a <block> node.
+     *
+     * @param DOMElement $blockNode The block XML element.
+     * @return Block The parsed Block object.
+     */
+    public function createBlock(DOMElement $blockNode): Block
     {
-        $block = new Block((int) $block_node->getAttribute('arity'));
+        $block = new Block((int) $blockNode->getAttribute('arity'));
+        $block->params = $this->parseBlockParameters($blockNode);
+        $block->instructions = $this->parseAssignments($blockNode);
 
-        // Parse block parameters
+        return $block;
+    }
+
+    /**
+     * Parses the parameters of a block and returns them in order.
+     *
+     * @param DOMElement $blockNode The block XML element.
+     * @return array The parsed parameters.
+     */
+    private function parseBlockParameters(DOMElement $blockNode): array
+    {
         $params = [];
-        foreach ($block_node->childNodes as $child) {
+        foreach ($blockNode->childNodes as $child) {
             if ($child instanceof DOMElement && $child->nodeName === 'parameter') {
                 $order = (int) $child->getAttribute('order');
                 $params[$order] = $child->getAttribute('name');
             }
         }
 
-        ksort($params); // Sort parameters by order
-        $block->params = array_values($params);
+        ksort($params); // Ensure parameters are in order
+        return array_values($params);
+    }
 
-        // Parse assignment instructions inside the block
+    /**
+     * Parses the assignment statements inside a block.
+     *
+     * @param DOMElement $blockNode The block XML element.
+     * @return array The parsed assignment statements.
+     */
+    private function parseAssignments(DOMElement $blockNode): array
+    {
         $assignments = [];
-        $statements = $block_node->getElementsByTagName('assign');
-        foreach ($statements as $statement) {
-            if ($statement->parentNode->isSameNode($block_node)) {
+        foreach ($blockNode->getElementsByTagName('assign') as $statement) {
+            if ($statement->parentNode->isSameNode($blockNode)) {
                 $order = (int) $statement->getAttribute('order');
-
                 $varNode = $statement->getElementsByTagName('var')->item(0);
                 $exprNode = $statement->getElementsByTagName('expr')->item(0);
 
-                if ($varNode instanceof DOMElement && $exprNode instanceof DOMElement) {
+                if ($varNode && $exprNode) {
                     $var = $varNode->getAttribute('name');
                     $expression = $this->createExpression($exprNode);
                     $assignments[$order] = new Assignment($var, $expression);
@@ -85,75 +112,76 @@ class Parser
             }
         }
 
-        ksort($assignments); // Sort assignments by order
-        $block->instructions = array_values($assignments);
-
-        return $block;
+        ksort($assignments); // Ensure assignments are in order
+        return array_values($assignments);
     }
 
-    // Parse an <expr> node and return an AST object
-    public function createExpression(DOMElement $expr_node): Block|Literal|Message|Variable
+    /**
+     * Creates an expression object from an <expr> node.
+     *
+     * @param DOMElement $exprNode The expression XML element.
+     * @return Block|Literal|Message|Variable The parsed expression.
+     * @throws Exception If the expression is invalid.
+     */
+    public function createExpression(DOMElement $exprNode): Block|Literal|Message|Variable
     {
-        foreach ($expr_node->childNodes as $child) {
+        foreach ($exprNode->childNodes as $child) {
             if (!$child instanceof DOMElement) {
                 continue;
             }
 
             switch ($child->nodeName) {
                 case 'literal':
-                    // Return a literal node
                     return new Literal(
                         $child->getAttribute('class'),
                         $child->getAttribute('value')
                     );
 
                 case 'var':
-                    // Return a Variable node
                     return new Variable($child->getAttribute('name'));
 
                 case 'send':
-                    // Handle message sending expression
-                    $receiver = null;
-                    $argMap = [];
-
-                    foreach ($child->childNodes as $sendChild) {
-                        if ($sendChild instanceof DOMElement) {
-                            if ($sendChild->nodeName === 'expr') {
-                                if ($receiver === null) {
-                                    // First <expr> is the receiver
-                                    $receiver = $this->createExpression($sendChild);
-                                }
-                            } elseif ($sendChild->nodeName === 'arg') {
-                                // Parse message arguments
-                                $order = (int) $sendChild->getAttribute('order');
-                                $expr = $sendChild->getElementsByTagName('expr')->item(0);
-                                if ($expr instanceof DOMElement) {
-                                    $argMap[$order] = $this->createExpression($expr);
-                                }
-                            }
-                        }
-                    }
-
-                    ksort($argMap); // Sort arguments by order
-                    $args = array_values($argMap);
-
-                    return new Message(
-                        $receiver,
-                        $child->getAttribute('selector'),
-                        $args
-                    );
+                    return $this->parseMessageSend($child);
 
                 case 'block':
-                    // Return a nested block expression
                     return $this->createBlock($child);
 
                 default:
-                    // Unknown node inside <expr>
                     throw new Exception('Unknown node in <expr>', ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
             }
         }
 
-        // No valid child found in <expr>
         throw new Exception('Unknown node in <expr>', ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
+    }
+
+    /**
+     * Parses a message sending expression from a <send> node.
+     *
+     * @param DOMElement $sendNode The <send> XML element.
+     * @return Message The parsed message.
+     */
+    private function parseMessageSend(DOMElement $sendNode): Message
+    {
+        $receiver = null;
+        $args = [];
+
+        foreach ($sendNode->childNodes as $sendChild) {
+            if ($sendChild instanceof DOMElement) {
+                if ($sendChild->nodeName === 'expr') {
+                    if (!$receiver) {
+                        $receiver = $this->createExpression($sendChild);
+                    }
+                } elseif ($sendChild->nodeName === 'arg') {
+                    $order = (int) $sendChild->getAttribute('order');
+                    $exprNode = $sendChild->getElementsByTagName('expr')->item(0);
+                    if ($exprNode instanceof DOMElement) {
+                        $args[$order] = $this->createExpression($exprNode);
+                    }
+                }
+            }
+        }
+
+        ksort($args); // Ensure arguments are in order
+        return new Message($receiver, $sendNode->getAttribute('selector'), array_values($args));
     }
 }
