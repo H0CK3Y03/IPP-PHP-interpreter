@@ -97,7 +97,7 @@ class Traverser
             // Create class and add its methods
             $class = new SOL25Class($classDef->name, $parent);
             foreach ($classDef->methods as $methodName => $methodDef) {
-                $method = new SOL25Method($methodDef->selector_name, $methodDef->method_body, $methodDef->method_body->params);
+                $method = new SOL25Method($methodDef->selectorName, $methodDef->body, $methodDef->body->params);
                 $class->addMethod($method);
             }
 

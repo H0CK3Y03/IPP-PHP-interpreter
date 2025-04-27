@@ -47,6 +47,6 @@ class ClassDefinition
      */
     public function addMethod(Method $method): void
     {
-        $this->methods[$method->selector_name] = $method;
+        $this->methods[$method->selectorName] = $method;
     }
 }
