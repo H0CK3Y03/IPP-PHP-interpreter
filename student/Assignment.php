@@ -23,8 +23,8 @@ class Assignment
     /**
      * Constructor for Assignment.
      *
-     * @param string $variable The variable being assigned a value.
-     * @param Message|Literal|Block|Variable|Method|Assignment $expression The expression whose result is assigned to the variable.
+     * @param string $var The variable being assigned a value.
+     * @param Message|Literal|Block|Variable|Method|Assignment $expr The expression whose result is assigned to the variable.
      */
     public function __construct(string $var, Message|Literal|Block|Variable|Method|Assignment $expr)
     {

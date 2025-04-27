@@ -4,34 +4,60 @@ namespace IPP\Student;
 
 use IPP\Student\Scope;
 
+/**
+ * Represents sending a message to a receiver object with optional arguments.
+ */
 class Message
 {
-    /** @var Message|Literal|Block|Variable|Method|Assignment */
-    public $receiver;
-    public string $msg_name;
-    /** @var array<Message|Literal|Block|Variable|Method|Assignment> */
-    public array $send;
+    /**
+     * Receiver of the message.
+     *
+     * @var Message|Literal|Block|Variable|Method|Assignment
+     */
+    public Message|Literal|Block|Variable|Method|Assignment $receiver;
 
     /**
+     * Name of the message (method selector).
+     *
+     * @var string
+     */
+    public string $messageName;
+
+    /**
+     * Arguments to send along with the message.
+     *
+     * @var array<Message|Literal|Block|Variable|Method|Assignment>
+     */
+    public array $arguments;
+
+    /**
+     * Message constructor.
+     *
      * @param Message|Literal|Block|Variable|Method|Assignment $receiver
-     * @param string $message
-     * @param array<Message|Literal|Block|Variable|Method|Assignment> $send
+     * @param string $messageName
+     * @param array<Message|Literal|Block|Variable|Method|Assignment> $arguments
      */
     public function __construct(
         Message|Literal|Block|Variable|Method|Assignment $receiver,
-        string $msg,
-        array $send
+        string $messageName,
+        array $arguments
     ) {
         $this->receiver = $receiver;
-        $this->msg_name = $msg;
-        $this->send = $send;
+        $this->messageName = $messageName;
+        $this->arguments = $arguments;
     }
 
+    /**
+     * Evaluates the message by first evaluating the receiver and then sending the message.
+     *
+     * @param Scope $scope
+     * @return mixed
+     */
     public function evaluate(Scope $scope): mixed
     {
-        $receiverObj = $this->receiver->evaluate($scope);
-        $senderObj = $this->send;
+        $receiverObject = $this->receiver->evaluate($scope);
 
-        return $receiverObj->sendMessage($receiverObj, $this->msg_name, $scope, $senderObj);
+        // Pass the unevaluated arguments along; the receiver decides whether to evaluate them
+        return $receiverObject->sendMessage($receiverObject, $this->messageName, $scope, $this->arguments);
     }
 }
