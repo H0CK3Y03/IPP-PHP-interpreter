@@ -56,23 +56,52 @@ class SOL25Class
     // Check if the current class is a subclass or the same as another class
     public function isSubclassOrSame(SOL25Class $diff): bool
     {
-        $current = $diff;
+        $current = $this;
         while ($current !== null) {
-            if ($current === $this) {
+            if ($current === $diff) {
                 return true;
             }
-            $current = $diff->parent;
+            $current = $current->parent;
         }
         return false;
     }
 
     /**
      * Switch the method based on the selector name for the receiver object.
-     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
-     * @return SOL25Object
+     * @param SOL25Object $receiverObj The receiver object that the method is invoked on.
+     * @param string $selectorName The method name or selector.
+     * @param Scope $scope The current scope in which the method is evaluated.
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj The sender objects.
+     * @return SOL25Object The result of the method call.
      */
     public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObj): SOL25Object
     {
-        return $scope->getSingleton('nil');
+        switch ($selectorName) {
+            case 'whileTrue':
+                // Assuming a specific behavior for 'whileTrue'
+                return new SOL25Object($scope->getClass('String'), 'nil');
+            case 'isNumber':
+                return $this->boolResult(false, $scope); // Assuming 'false' for this case
+            case 'isString':
+                return $this->boolResult(false, $scope);
+            case 'isBlock':
+                return $this->boolResult(true, $scope);
+            case 'isNil':
+                return $this->boolResult(false, $scope);
+            default:
+                return $scope->getSingleton('nil'); // Default: return the 'nil' singleton
+        }
+    }
+
+    /**
+     * Helper method to return a SOL25Object with a boolean value.
+     * 
+     * @param bool $value The boolean value to wrap.
+     * @param Scope $scope The scope in which the result is evaluated.
+     * @return SOL25Object The boolean result wrapped in a SOL25Object.
+     */
+    private function boolResult(bool $value, Scope $scope): SOL25Object
+    {
+        return new SOL25Object($scope->getClass('Boolean'), $value ? 'true' : 'false');
     }
 }
