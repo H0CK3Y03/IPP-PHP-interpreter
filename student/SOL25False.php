@@ -27,8 +27,10 @@ class SOL25False extends SOL25ObjectClass
             case 'new':
                 return $scope->getSingleton('false');
             case 'identicalTo:':
+                // Compare the class for identicality
                 return $this->boolResult($receiverObj->class === $senderObj[0]->evaluate($scope)->class, $scope);
             case 'equalTo:':
+                // Compare the __value__ attribute for equality
                 $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
                 return $this->boolResult($receiverVal == $senderVal, $scope);
             case 'asString':
@@ -44,9 +46,11 @@ class SOL25False extends SOL25ObjectClass
             case 'not':
                 return $scope->getSingleton('true');
             case 'and:':
-                return $scope->getSingleton('false');
+                // Short-circuit logic for 'and'
+                return $receiverVal ? $senderObj[0]->evaluate($scope) : $scope->getSingleton('false');
             case 'or:':
-                return $senderObj[0]->evaluate($scope);
+                // Short-circuit logic for 'or'
+                return $receiverVal ? $scope->getSingleton('true') : $senderObj[0]->evaluate($scope);
             case 'ifTrue:ifFalse:':
                 if ($receiverObj->class instanceof SolTrueClass) {
                     return $senderObj[0]->evaluate($scope);
@@ -54,6 +58,8 @@ class SOL25False extends SOL25ObjectClass
                 if ($receiverObj->class instanceof SOL25False) {
                     return $senderObj[1]->evaluate($scope);
                 }
+                // If neither case matches, throw an exception
+                return $scope->getSingleton('false');
             default:
                 throw new Exception('Method not found', ReturnCode::INTERPRET_TYPE_ERROR);
         }
