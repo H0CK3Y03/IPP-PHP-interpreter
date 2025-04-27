@@ -16,25 +16,37 @@ use IPP\Student\Scope;
 class SOL25Block extends SOL25ObjectClass
 {
     /**
-     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
-     * @return SOL25Object
+     * Switches method calls based on the selectorName.
+     * 
+     * @param SOL25Object $receiverObj The object receiving the method call.
+     * @param string $selectorName The name of the method being called.
+     * @param Scope $scope The scope in which the method is being executed.
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj The objects involved in the method call, can be null.
+     * @return SOL25Object The result of the method call.
+     * @throws Exception If the method is not found.
      */
-    // Are the parameters correct?
     public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObj): SOL25Object
     {
         switch ($selectorName) {
             case 'whileTrue':
+                // Assuming 'whileTrue' always returns a nil String
                 return new SOL25Object($scope->getClass('String'), 'nil');
+            
             case 'isNumber':
-                return $this->boolResult(false, $scope);
+                return $this->boolResult(false, $scope); // Return false wrapped in a SOL25Object
+            
             case 'isString':
-                return $this->boolResult(false, $scope);
+                return $this->boolResult(false, $scope); // Return false wrapped in a SOL25Object
+            
             case 'isBlock':
-                return $this->boolResult(true, $scope);
+                return $this->boolResult(true, $scope); // Return true wrapped in a SOL25Object
+            
             case 'isNil':
-                return $this->boolResult(false, $scope);
+                return $this->boolResult(false, $scope); // Return false wrapped in a SOL25Object
+
+            // Default case for unsupported method calls
             default:
-                throw new Exception('Method not found', ReturnCode::INTERPRET_TYPE_ERROR);
+                throw new Exception('Method not found: ' . $selectorName, ReturnCode::INTERPRET_TYPE_ERROR);
         }
     }
 }
