@@ -20,11 +20,8 @@ class Exception extends IPPException
      * @param int $returnCode The return code associated with the exception.
      * @param \Throwable|null $previous The previous throwable used for exception chaining.
      */
-    public function __construct(
-        string $message = "Unexpected behavior",
-        int $returnCode = ReturnCode::INPUT_FILE_ERROR,
-        ?\Throwable $previous = null
-    ) {
+    public function __construct(string $message = "Unexpected behavior", int $returnCode = ReturnCode::INPUT_FILE_ERROR, ?\Throwable $previous = null)
+    {
         // Call parent constructor with the provided message and return code
         parent::__construct($message, $returnCode, $previous);
 

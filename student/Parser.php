@@ -40,10 +40,7 @@ class Parser
             foreach ($class->getElementsByTagName('method') as $method) {
                 $blockNode = $method->getElementsByTagName('block')->item(0);
                 if ($blockNode) {
-                    $methodDefinition = new Method(
-                        $method->getAttribute('selector'),
-                        $this->createBlock($blockNode)
-                    );
+                    $methodDefinition = new Method($method->getAttribute('selector'), $this->createBlock($blockNode));
                     $classDefinition->addMethod($methodDefinition);
                 }
             }
@@ -171,7 +168,8 @@ class Parser
                     if (!$receiver) {
                         $receiver = $this->createExpression($sendChild);
                     }
-                } elseif ($sendChild->nodeName === 'arg') {
+                }
+                elseif ($sendChild->nodeName === 'arg') {
                     $order = (int) $sendChild->getAttribute('order');
                     $exprNode = $sendChild->getElementsByTagName('expr')->item(0);
                     if ($exprNode instanceof DOMElement) {

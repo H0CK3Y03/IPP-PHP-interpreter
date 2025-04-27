@@ -94,7 +94,8 @@ class Block
         foreach ($this->params as $index => $paramName) {
             if ($arguments === null) {
                 $scope->addVar($paramName);
-            } else {
+            }
+            else {
                 $argument = $arguments[$index];
                 $value = ($argument instanceof SOL25Object) ? $argument : $argument->evaluate($scope);
                 $scope->setVar($paramName, $value);
