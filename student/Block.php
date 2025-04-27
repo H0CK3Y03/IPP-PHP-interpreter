@@ -7,48 +7,113 @@ use IPP\Student\SOL25Object;
 use IPP\Student\Exception;
 use IPP\Student\Scope;
 
+/**
+ * Represents a block of instructions with optional parameters.
+ */
 class Block
 {
-    public int $params_count;
-    /** @var array<string> */
-    public $params = [];
-    /** @var array<Assignment> */
-    public $instructions = [];
+    /**
+     * Number of parameters the block expects.
+     *
+     * @var int
+     */
+    public int $paramCount;
 
-    public function __construct(int $params_count)
+    /**
+     * List of parameter names.
+     *
+     * @var string[]
+     */
+    public array $params = [];
+
+    /**
+     * List of instructions within the block.
+     *
+     * @var Assignment[]
+     */
+    public array $instructions = [];
+
+    /**
+     * Create a new block with a given number of parameters.
+     *
+     * @param int $paramCount
+     */
+    public function __construct(int $paramCount)
     {
-        $this->params_count = $params_count;
+        $this->paramCount = $paramCount;
     }
 
     /**
-     * @param array<Message|Literal|Block|Variable|Method|Assignment|SOL25Object>|null $senderObj
+     * Evaluates the block within a new scope, with optional arguments.
+     *
+     * @param Scope $scope
+     * @param array<Message|Literal|Block|Variable|Method|Assignment|SOL25Object>|null $arguments
+     * @return SOL25Object
+     *
+     * @throws Exception if the number of arguments doesn't match the number of parameters
      */
-    public function evaluate(Scope $scope, ?array $senderObj = null): SOL25Object
+    public function evaluate(Scope $scope, ?array $arguments = null): SOL25Object
     {
         $scope->enterScope();
 
-        if ($senderObj == null && $this->params_count) {
-            throw new Exception("Error: count of sending arguments doesn't match with arguments in block\n", ReturnCode::INTERPRET_DNU_ERROR);
+        $this->validateArguments($arguments);
+
+        $this->bindParameters($scope, $arguments);
+
+        $lastResult = $this->executeInstructions($scope);
+
+        $scope->exitScope();
+
+        return $lastResult ?? $scope->getSingleton('nil');
+    }
+
+    /**
+     * Validates that the number of passed arguments matches the number of expected parameters.
+     *
+     * @param array|null $arguments
+     * @throws Exception
+     */
+    private function validateArguments(?array $arguments): void
+    {
+        if (($arguments === null && $this->paramCount > 0) || ($arguments !== null && count($arguments) !== $this->paramCount)) {
+            throw new Exception(
+                "Error: Count of sending arguments doesn't match the number of parameters in the block\n",
+                ReturnCode::INTERPRET_DNU_ERROR
+            );
         }
-        if ($senderObj != null && $this->params_count != count($senderObj)) {
-            throw new Exception("Error: count of sending arguments doesn't match with arguments in block\n", ReturnCode::INTERPRET_DNU_ERROR);
-        }
-        foreach ($this->params as $idx => $param) {
-            if ($param && $senderObj == null) {
-                $scope->addVar($param);
-            } elseif ($senderObj) {
-                if ($senderObj[$idx] instanceof SOL25Object) {
-                    $scope->setVar($param, $senderObj[$idx]);
-                } else {
-                    $scope->setVar($param, $senderObj[$idx]->evaluate($scope));
-                }
+    }
+
+    /**
+     * Binds parameters in the scope, either by adding them or setting their value from arguments.
+     *
+     * @param Scope $scope
+     * @param array|null $arguments
+     */
+    private function bindParameters(Scope $scope, ?array $arguments): void
+    {
+        foreach ($this->params as $index => $paramName) {
+            if ($arguments === null) {
+                $scope->addVar($paramName);
+            } else {
+                $argument = $arguments[$index];
+                $value = ($argument instanceof SOL25Object) ? $argument : $argument->evaluate($scope);
+                $scope->setVar($paramName, $value);
             }
         }
+    }
 
+    /**
+     * Executes the instructions in order and returns the result of the last instruction.
+     *
+     * @param Scope $scope
+     * @return SOL25Object|null
+     */
+    private function executeInstructions(Scope $scope): ?SOL25Object
+    {
+        $result = null;
         foreach ($this->instructions as $instruction) {
-            $lastResult = $instruction->evaluate($scope);
+            $result = $instruction->evaluate($scope);
         }
-        $scope->exitScope();
-        return $lastResult ?? $scope->getSingleton('nil');
+        return $result;
     }
 }
