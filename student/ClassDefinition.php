@@ -2,13 +2,13 @@
 
 namespace IPP\Student;
 
-class AstClassDefinition
+class ClassDefinition
 {
     public string $name;
     public string $parent;
 
-    /** @var array<string, AstMethod> */
-    public $methods_list = [];
+    /** @var array<string, Method> */
+    public $methods = [];
 
     public function __construct(string $name, string $parent_name)
     {
@@ -16,8 +16,8 @@ class AstClassDefinition
         $this->parent = $parent_name;
     }
     // Add method to $this class
-    public function addMethod(AstMethod $method): void
+    public function addMethod(Method $method): void
     {
-        $this->methods_list[$method->selector_name] = $method;
+        $this->methods[$method->selector_name] = $method;
     }
 }

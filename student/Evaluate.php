@@ -3,14 +3,14 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\SolObject;
-use IPP\Student\Scopes;
+use IPP\Student\SOL25Object;
+use IPP\Student\Scope;
 
 class Evaluate
 {
-    public Scopes $scope;
+    public Scope $scope;
 
-    public function __construct(Scopes $scope)
+    public function __construct(Scope $scope)
     {
         $this->scope = $scope;
     }
@@ -23,12 +23,12 @@ class Evaluate
         $mainMethod = $mainClass->getMethod('run');
 
         if (!$mainMethod || $mainMethod['type'] !== 'user') {
-            throw new InterDException("Run method not found in class Main\n", ReturnCode::INTERPRET_DNU_ERROR);
+            throw new Exception("Run method not found in class Main\n", ReturnCode::INTERPRET_DNU_ERROR);
         }
 
         // Create a new instance of Main class for self and super
-        $mainSelfInstance = new SolObject($mainClass);
-        $mainSuperInstance = new SolObject($mainClass->parent);
+        $mainSelfInstance = new SOL25Object($mainClass);
+        $mainSuperInstance = new SOL25Object($mainClass->parent);
 
         // Set self and super in the scope
         $this->scope->setSelf($mainSelfInstance);

@@ -2,46 +2,46 @@
 
 namespace IPP\Student;
 
-use IPP\Student\AstBlock;
+use IPP\Student\Block;
 
-class SolMethod
+class SOL25Method
 {
     public string $name;
-    public AstBlock $block;
+    public Block $block;
     /** @var array<string, string> */
-    public array $parameters = [];
+    public array $params = [];
 
     /**
      * @param array<string, string> $params
      */
-    public function __construct(string $name, AstBlock $block, array $params)
+    public function __construct(string $name, Block $block, array $params)
     {
         $this->name = $name;
         $this->block = $block;
-        $this->parameters = $params;
+        $this->params = $params;
     }
 
     // Get the block of the method
-    public function getBlock(): AstBlock
+    public function getBlock(): Block
     {
         return $this->block;
     }
 
     /**
-     * Set the parameters for the method
+     * Set the params for the method
      * @param array<string, string> $params
      */
-    public function setParameters(array $params): void
+    public function setparams(array $params): void
     {
-        $this->parameters = $params;
+        $this->params = $params;
     }
 
     /**
-     * Get the names of the method parameters
+     * Get the names of the method params
      * @return array<string, string>
      */
     public function getParameterNames(): array
     {
-        return $this->parameters;
+        return $this->params;
     }
 }

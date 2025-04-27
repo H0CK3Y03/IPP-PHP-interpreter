@@ -2,12 +2,12 @@
 
 namespace IPP\Student;
 
-class AstMethod
+class Method
 {
     public string $selector_name;
-    public AstBlock $method_body;
+    public Block $method_body;
 
-    public function __construct(string $selector, AstBlock $body)
+    public function __construct(string $selector, Block $body)
     {
         $this->selector_name = $selector;
         $this->method_body = $body;

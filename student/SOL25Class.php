@@ -2,25 +2,25 @@
 
 namespace IPP\Student;
 
-use IPP\Student\Scopes;
-use IPP\Student\AstBlock;
-use IPP\Student\AstLiteral;
-use IPP\Student\AstMessage;
-use IPP\Student\AstMethod;
-use IPP\Student\AstVariable;
+use IPP\Student\Scope;
+use IPP\Student\Block;
+use IPP\Student\Literal;
+use IPP\Student\Message;
+use IPP\Student\Method;
+use IPP\Student\Variable;
 
-class SolClass
+class SOL25Class
 {
     public string $name;
-    public ?SolClass $parent;
+    public ?SOL25Class $parent;
 
     /** @var array<string> */
     public array $BuiltInMethods = [];
 
-    /** @var array<string, SolMethod> */
+    /** @var array<string, SOL25Method> */
     public array $userDefinedMethods = [];
 
-    public function __construct(string $name, ?SolClass $parent = null)
+    public function __construct(string $name, ?SOL25Class $parent = null)
     {
         $this->name = $name;
         $this->parent = $parent;
@@ -33,14 +33,14 @@ class SolClass
     }
 
     // Add a user-defined method to the class
-    public function addMethod(SolMethod $method): void
+    public function addMethod(SOL25Method $method): void
     {
         $this->userDefinedMethods[$method->name] = $method;
     }
 
     /**
      * Get the method corresponding to a selector name, checking both user-defined and built-in methods
-     * @return array{type: string, method: mixed, class: SolClass}|null
+     * @return array{type: string, method: mixed, class: SOL25Class}|null
      */
     public function getMethod(string $selector): ?array
     {
@@ -54,24 +54,24 @@ class SolClass
     }
 
     // Check if the current class is a subclass or the same as another class
-    public function isSubclassOrSame(SolClass $other): bool
+    public function isSubclassOrSame(SOL25Class $diff): bool
     {
-        $current = $other;
+        $current = $diff;
         while ($current !== null) {
             if ($current === $this) {
                 return true;
             }
-            $current = $other->parent;
+            $current = $diff->parent;
         }
         return false;
     }
 
     /**
      * Switch the method based on the selector name for the receiver object.
-     * @param array<AstMessage|AstLiteral|AstBlock|AstVariable|AstMethod|SolObject> $senderObjects
-     * @return SolObject
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
+     * @return SOL25Object
      */
-    public function switchMethod(SolObject $receiverObject, string $selectorName, Scopes $scope, ?array $senderObjects): SolObject
+    public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObj): SOL25Object
     {
         return $scope->getSingleton('nil');
     }

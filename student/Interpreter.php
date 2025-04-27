@@ -5,7 +5,7 @@ namespace IPP\Student;
 use IPP\Core\Exception\IPPException;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\ReturnCode;
-use IPP\Student\WalkingTree;
+use IPP\Student\Traverser;
 
 class Interpreter extends AbstractInterpreter
 {
@@ -16,8 +16,8 @@ class Interpreter extends AbstractInterpreter
             $dom = $this->source->getDOMDocument();
 
             // Create an AST from the XML document
-            $domParser = new DomParser();
-            $astTree = $domParser->createProgram($dom);
+            $parser = new Parser();
+            $tree = $parser->createProgram($dom);
 
             // Read input string for the program
             $val = $this->input->readString();
@@ -26,12 +26,12 @@ class Interpreter extends AbstractInterpreter
             }
 
             // Traverse the AST
-            $walkTroughTree = new WalkingTree();
-            $scope = $walkTroughTree->traverseProgram($astTree, $val);
+            $traverser = new Traverser();
+            $scope = $traverser->traverseProgram($tree, $val);
 
             // Evaluate the program
-            $evaluation = new Evaluate($scope);
-            $evaluation->evaluate();
+            $eval = new Evaluate($scope);
+            $eval->evaluate();
 
             return ReturnCode::OK;
         } catch (IPPException $e) {

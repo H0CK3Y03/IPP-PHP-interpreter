@@ -2,11 +2,11 @@
 
 namespace IPP\Student;
 
-use IPP\Student\SolClass;
-use IPP\Student\SolObject;
-use IPP\Student\Scopes;
+use IPP\Student\SOL25Class;
+use IPP\Student\SOL25Object;
+use IPP\Student\Scope;
 
-class AstVariable
+class Variable
 {
     public string $name;
 
@@ -15,7 +15,7 @@ class AstVariable
         $this->name = $name;
     }
 
-    public function evaluate(Scopes $scope): SolClass|SolObject|null
+    public function evaluate(Scope $scope): SOL25Class|SOL25Object|null
     {
         if ($this->name === 'self') {
             return $scope->getSelf();

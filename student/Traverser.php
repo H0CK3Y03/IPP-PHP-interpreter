@@ -3,31 +3,31 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\AstProgram;
-use IPP\Student\SolBlockClass;
-use IPP\Student\SolClass;
-use IPP\Student\SolFalseClass;
-use IPP\Student\SolIntegerClass;
-use IPP\Student\SolMethod;
-use IPP\Student\SolNilClass;
-use IPP\Student\SolObject;
-use IPP\Student\SolObjectClass;
-use IPP\Student\SolStringClass;
-use IPP\Student\SolTrueClass;
-use IPP\Student\Scopes;
+use IPP\Student\Program;
+use IPP\Student\SOL25Block;
+use IPP\Student\SOL25Class;
+use IPP\Student\SOL25False;
+use IPP\Student\SOL25Integer;
+use IPP\Student\SOL25Method;
+use IPP\Student\SOL25Nil;
+use IPP\Student\SOL25Object;
+use IPP\Student\SOL25ObjectClass;
+use IPP\Student\SOL25String;
+use IPP\Student\SOL25True;
+use IPP\Student\Scope;
 
-class WalkingTree
+class Traverser
 {
-    public function initialization(Scopes $scope): void
+    public function initialize(Scope $scope): void
     {
         // Create builtin classes and register them
-        $objectClass = new SolObjectClass('Object');
-        $intClass = new SolIntegerClass('Integer', $objectClass);
-        $stringClass = new SolStringClass('String', $objectClass);
-        $trueClass = new SolTrueClass('True', $objectClass);
-        $falseClass = new SolFalseClass('False', $objectClass);
-        $nilClass = new SolNilClass('Nil', $objectClass);
-        $blockClass = new SolBlockClass('Block', $objectClass);
+        $objectClass = new SOL25ObjectClass('Object');
+        $intClass = new SOL25Integer('Integer', $objectClass);
+        $stringClass = new SOL25String('String', $objectClass);
+        $trueClass = new SOL25True('True', $objectClass);
+        $falseClass = new SOL25False('False', $objectClass);
+        $nilClass = new SOL25Nil('Nil', $objectClass);
+        $blockClass = new SOL25Block('Block', $objectClass);
 
         $objectClassMethods = ['identicalTo:', 'equalTo:', 'asString', 'isNumber', 'isString', 'isBlock', 'isNil'];
         $intClassMethods = array_merge($objectClassMethods, ['greaterThan:', 'plus:', 'minus:', 'multiplyBy:', 'divBy:', 'asInteger', 'timesRepeat:']);
@@ -64,9 +64,9 @@ class WalkingTree
         $scope->registerClass('Block', $blockClass);
 
         // Create singleton objects
-        $trueObj = new SolObject($trueClass);
-        $falseObj = new SolObject($falseClass);
-        $nilObj = new SolObject($nilClass);
+        $trueObj = new SOL25Object($trueClass);
+        $falseObj = new SOL25Object($falseClass);
+        $nilObj = new SOL25Object($nilClass);
 
         // Register singleton objects
         $scope->setSingleton('true', $trueObj);
@@ -74,13 +74,13 @@ class WalkingTree
         $scope->setSingleton('nil', $nilObj);
     }
 
-    public function traverseProgram(AstProgram $program, string $input = ''): Scopes
+    public function traverseProgram(Program $program, string $input = ''): Scope
     {
-        $scope = new Scopes($input);
-        $this->initialization($scope);
+        $scope = new Scope($input);
+        $this->initialize($scope);
 
         // Traverse classes in the program
-        foreach ($program->classes_list as $className => $classDef) {
+        foreach ($program->classes as $className => $classDef) {
             $parent = null;
 
             // Ensure 'Object' class has no parent
@@ -95,14 +95,14 @@ class WalkingTree
             }
 
             // Create class and add its methods
-            $solClass = new SolClass($classDef->name, $parent);
-            foreach ($classDef->methods_list as $methodName => $methodDef) {
-                $solMethod = new SolMethod($methodDef->selector_name, $methodDef->method_body, $methodDef->method_body->params);
-                $solClass->addMethod($solMethod);
+            $class = new SOL25Class($classDef->name, $parent);
+            foreach ($classDef->methods as $methodName => $methodDef) {
+                $method = new SOL25Method($methodDef->selector_name, $methodDef->method_body, $methodDef->method_body->params);
+                $class->addMethod($method);
             }
 
             // Register class in scope
-            $scope->registerClass($solClass->name, $solClass);
+            $scope->registerClass($class->name, $class);
         }
 
         return $scope;

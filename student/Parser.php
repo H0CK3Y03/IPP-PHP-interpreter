@@ -3,28 +3,28 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
-use IPP\Student\AstAssignment;
-use IPP\Student\AstBlock;
-use IPP\Student\AstClassDefinition;
-use IPP\Student\AstLiteral;
-use IPP\Student\AstMessage;
-use IPP\Student\AstMethod;
-use IPP\Student\AstProgram;
-use IPP\Student\AstVariable;
+use IPP\Student\Assignment;
+use IPP\Student\Block;
+use IPP\Student\ClassDefinition;
+use IPP\Student\Literal;
+use IPP\Student\Message;
+use IPP\Student\Method;
+use IPP\Student\Program;
+use IPP\Student\Variable;
 use DOMDocument;
 use DOMElement;
 
-class DomParser
+class Parser
 {
-    // Parse the root <program> and create an AstProgram
-    public function createProgram(DOMDocument $dom): AstProgram
+    // Parse the root <program> and create an Program
+    public function createProgram(DOMDocument $dom): Program
     {
-        $program = new AstProgram();
+        $program = new Program();
 
         // Iterate over all <class> elements
         $classes = $dom->getElementsByTagName('class');
         foreach ($classes as $class) {
-            $c = new AstClassDefinition(
+            $c = new ClassDefinition(
                 $class->getAttribute('name'),
                 $class->getAttribute('parent')
             );
@@ -34,8 +34,8 @@ class DomParser
             foreach ($methods as $method) {
                 $block = $method->getElementsByTagName('block')->item(0);
                 if ($block !== null) {
-                    // Create an AstMethod with selector and parsed block
-                    $m = new AstMethod(
+                    // Create an Method with selector and parsed block
+                    $m = new Method(
                         $method->getAttribute('selector'),
                         $this->createBlock($block)
                     );
@@ -50,10 +50,10 @@ class DomParser
         return $program;
     }
 
-    // Parse a <block> node and return an AstBlock
-    public function createBlock(DOMElement $block_node): AstBlock
+    // Parse a <block> node and return an Block
+    public function createBlock(DOMElement $block_node): Block
     {
-        $block = new AstBlock((int) $block_node->getAttribute('arity'));
+        $block = new Block((int) $block_node->getAttribute('arity'));
 
         // Parse block parameters
         $params = [];
@@ -78,9 +78,9 @@ class DomParser
                 $exprNode = $statement->getElementsByTagName('expr')->item(0);
 
                 if ($varNode instanceof DOMElement && $exprNode instanceof DOMElement) {
-                    $variable = $varNode->getAttribute('name');
+                    $var = $varNode->getAttribute('name');
                     $expression = $this->createExpression($exprNode);
-                    $assignments[$order] = new AstAssignment($variable, $expression);
+                    $assignments[$order] = new Assignment($var, $expression);
                 }
             }
         }
@@ -92,7 +92,7 @@ class DomParser
     }
 
     // Parse an <expr> node and return an AST object
-    public function createExpression(DOMElement $expr_node): AstBlock|AstLiteral|AstMessage|AstVariable
+    public function createExpression(DOMElement $expr_node): Block|Literal|Message|Variable
     {
         foreach ($expr_node->childNodes as $child) {
             if (!$child instanceof DOMElement) {
@@ -102,14 +102,14 @@ class DomParser
             switch ($child->nodeName) {
                 case 'literal':
                     // Return a literal node
-                    return new AstLiteral(
+                    return new Literal(
                         $child->getAttribute('class'),
                         $child->getAttribute('value')
                     );
 
                 case 'var':
-                    // Return a variable node
-                    return new AstVariable($child->getAttribute('name'));
+                    // Return a Variable node
+                    return new Variable($child->getAttribute('name'));
 
                 case 'send':
                     // Handle message sending expression
@@ -137,7 +137,7 @@ class DomParser
                     ksort($argMap); // Sort arguments by order
                     $args = array_values($argMap);
 
-                    return new AstMessage(
+                    return new Message(
                         $receiver,
                         $child->getAttribute('selector'),
                         $args
@@ -149,11 +149,11 @@ class DomParser
 
                 default:
                     // Unknown node inside <expr>
-                    throw new InterDException('Unknown node in <expr>', ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
+                    throw new Exception('Unknown node in <expr>', ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
             }
         }
 
         // No valid child found in <expr>
-        throw new InterDException('Unknown node in <expr>', ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
+        throw new Exception('Unknown node in <expr>', ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
     }
 }

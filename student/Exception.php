@@ -5,16 +5,16 @@ namespace IPP\Student;
 use IPP\Core\Exception\IPPException;
 use IPP\Core\ReturnCode;
 
-class InterDException extends IPPException
+class Exception extends IPPException
 {
     protected int $returnCode;
 
     public function __construct(
-        string $message = "Unexpected behavior",
+        string $msg = "Unexpected behavior",
         int $code = ReturnCode::INPUT_FILE_ERROR,
-        ?\Throwable $previous = null
+        ?\Throwable $prev = null
     ) {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($msg, $code, $prev);
         $this->returnCode = $code;
     }
 
