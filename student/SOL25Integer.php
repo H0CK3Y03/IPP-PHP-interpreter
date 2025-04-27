@@ -20,7 +20,7 @@ class SOL25Integer extends SOL25ObjectClass
      * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      * @return SOL25Object
      */
-    public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObj): SOL25Object
+    public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObjs): SOL25Object
     {
         $receiverVal = $receiverObj->getAttr('__value__');
 
@@ -36,30 +36,30 @@ class SOL25Integer extends SOL25ObjectClass
             case 'isNil':
                 return $this->boolResult(false, $scope);
             case 'identicalTo:':
-                return $this->boolResult($receiverObj->class === $senderObj[0]->evaluate($scope)->class, $scope);
+                return $this->boolResult($receiverObj->class === $senderObjs[0]->evaluate($scope)->class, $scope);
             case 'equalTo:':
-                $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
                 return $this->boolResult($receiverVal == $senderVal, $scope);
             case 'greaterThan:':
-                $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
                 if ($receiverVal == $senderVal) {
                     return $this->boolResult(false, $scope);
                 }
                 return $this->boolResult($receiverVal > $senderVal, $scope);
             case 'plus:':
-                $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
                 return new SOL25Object($scope->getClass('Integer'), $receiverVal + $senderVal);
 
 
             case 'minus:':
-                $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
 
                 return new SOL25Object($scope->getClass('Integer'), (int) $receiverVal - (int) $senderVal);
             case 'multiplyBy:':
-                $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
                 return new SOL25Object($scope->getClass('Integer'), (int) $receiverVal * (int) $senderVal);
             case 'divBy:':
-                $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
                 if ((int) $senderVal == 0) {
                     fwrite(STDERR, "Zero division.\n");
                     exit(ReturnCode::INTERPRET_VALUE_ERROR);
@@ -72,10 +72,10 @@ class SOL25Integer extends SOL25ObjectClass
             case 'timesRepeat:':
                 for ($i = 1; $i <= $receiverVal; $i++) {
                     $iter = array(new SOL25Object($scope->getClass('Integer'), $i));
-                    if ($senderObj[0] instanceof Block) {
-                        $this->lastResult = $senderObj[0]->evaluate($scope, $iter);
+                    if ($senderObjs[0] instanceof Block) {
+                        $this->lastResult = $senderObjs[0]->evaluate($scope, $iter);
                     } else {
-                        $senderObj = $senderObj[0]->evaluate($scope);
+                        $senderObj = $senderObjs[0]->evaluate($scope);
                         $this->lastResult = $senderObj->class->getMethod('value:')['method']->block->evaluate($scope, $iter);
                     }
                 }
