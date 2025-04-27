@@ -32,13 +32,20 @@ class Scope
         $this->stdout = new StreamWriter(STDOUT);
     }
 
-    // Start a new variable scope
+    /**
+     * Start a new variable scope.
+     * Pushes a new empty scope onto the scope stack.
+     */
     public function enterScope(): void
     {
         array_push($this->scopes, []);
     }
 
-    // End the current variable scope
+    /**
+     * End the current variable scope.
+     * Pops the top scope from the scope stack.
+     * Throws an exception if no scope is available to exit.
+     */
     public function exitScope(): void
     {
         if (count($this->scopes) > 0) {
@@ -48,7 +55,10 @@ class Scope
         }
     }
 
-    // Add a variable to the current scope
+    /**
+     * Add a variable to the current scope.
+     * Throws an exception if no active scope is available.
+     */
     public function addVar(string $varName): void
     {
         if (count($this->scopes) > 0) {
@@ -58,7 +68,11 @@ class Scope
         }
     }
 
-    // Set a variable's value
+    /**
+     * Set a variable's value in the scope.
+     * Searches from the innermost scope to the outer scopes.
+     * Throws an exception if the variable is not found.
+     */
     public function setVar(string $varName, SOL25Object $expr): void
     {
         $count = count($this->scopes);
@@ -70,7 +84,7 @@ class Scope
             }
         }
 
-        // If not found, set it in the current scope
+        // If variable not found, set it in the current scope
         if (count($this->scopes) > 0) {
             $this->scopes[count($this->scopes) - 1][$varName] = ['expression' => $expr];
         } else {
@@ -78,7 +92,11 @@ class Scope
         }
     }
 
-    // Get the value of a variable
+    /**
+     * Get the value of a variable.
+     * Searches from the innermost scope to the outer scopes.
+     * Throws an exception if the variable is not found.
+     */
     public function getVar(string $varName): ?SOL25Object
     {
         $count = count($this->scopes);
@@ -91,7 +109,9 @@ class Scope
         throw new Exception("Error: Unknown '$varName' variable\n", ReturnCode::PARSE_UNDEF_ERROR);
     }
 
-    // Check if a variable exists
+    /**
+     * Check if a variable exists in the current scope or any outer scope.
+     */
     public function hasVar(string $varName): bool
     {
         foreach (array_reverse($this->scopes) as $scope) {
@@ -102,13 +122,18 @@ class Scope
         return false;
     }
 
-    // Add a class definition
+    /**
+     * Register a class definition in the scope.
+     */
     public function registerClass(string $name, SOL25Class $class): void
     {
         $this->classes[$name] = $class;
     }
 
-    // Get a class by name
+    /**
+     * Get a class definition by name.
+     * Throws an exception if the class is not registered.
+     */
     public function getClass(string $name): SOL25Class
     {
         if (!isset($this->classes[$name])) {
@@ -117,37 +142,50 @@ class Scope
         return $this->classes[$name];
     }
 
-    // Add a singleton object
+    /**
+     * Set a singleton object in the scope.
+     */
     public function setSingleton(string $name, SOL25Object $obj): void
     {
         $this->singletons[$name] = $obj;
     }
 
-    // Get a singleton object
+    /**
+     * Get a singleton object by name.
+     * Returns null if the singleton doesn't exist.
+     */
     public function getSingleton(string $name): ?SOL25Object
     {
         return $this->singletons[$name] ?? null;
     }
 
-    // Set the $self object
+    /**
+     * Set the $self object, representing the current object.
+     */
     public function setSelf(SOL25Object $obj): void
     {
         $this->self = $obj;
     }
 
-    // Get the $self object
+    /**
+     * Get the $self object.
+     */
     public function getSelf(): SOL25Object
     {
         return $this->self;
     }
 
-    // Set the $super object
+    /**
+     * Set the $super object, representing the superclass.
+     */
     public function setSuper(SOL25Object $obj): void
     {
         $this->super = $obj;
     }
 
-    // Get the $super object
+    /**
+     * Get the $super object.
+     */
     public function getSuper(): SOL25Object
     {
         return $this->super;
