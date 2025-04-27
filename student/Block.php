@@ -76,10 +76,7 @@ class Block
     private function validateArguments(?array $arguments): void
     {
         if (($arguments === null && $this->paramCount > 0) || ($arguments !== null && count($arguments) !== $this->paramCount)) {
-            throw new Exception(
-                "Error: Count of sending arguments doesn't match the number of parameters in the block\n",
-                ReturnCode::INTERPRET_DNU_ERROR
-            );
+            throw new Exception("Number of sent arguments (" . ($arguments !== null ? count($arguments) : 'null') . ")  doesn't match the number of parameters in the block (" . $paramCount . ")\n", ReturnCode::INTERPRET_DNU_ERROR);
         }
     }
 
