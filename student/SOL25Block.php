@@ -31,19 +31,12 @@ class SOL25Block extends SOL25ObjectClass
             case 'whileTrue':
                 // Assuming 'whileTrue' always returns a nil String
                 return new SOL25Object($scope->getClass('String'), 'nil');
-            
-            case 'isNumber':
-                return $this->boolResult(false, $scope); // Return false wrapped in a SOL25Object
-            
-            case 'isString':
-                return $this->boolResult(false, $scope); // Return false wrapped in a SOL25Object
-            
             case 'isBlock':
-                return $this->boolResult(true, $scope); // Return true wrapped in a SOL25Object
-            
+                return $this->boolResult(true, $scope);
+            case 'isNumber':
+            case 'isString':
             case 'isNil':
-                return $this->boolResult(false, $scope); // Return false wrapped in a SOL25Object
-
+                return $this->boolResult(false, $scope);
             // Default case for unsupported method calls
             default:
                 throw new Exception('Method not found: ' . $selectorName, ReturnCode::INTERPRET_TYPE_ERROR);
