@@ -1,67 +1,164 @@
-# Implementation Documentation for Task 2 – IPP 2024/2025
-**Name:** Miroslav Bašista
+# Documentation of Project Implementation for IPP 2024/2025
+---
+### Name and surname: Adam Veselý
+### Login: xvesela00
+---
+## Overview
+- The **SOL25** Interpreter is a PHP-based implementation of a Smalltalk-inspired object-oriented programming language called **SOL25**. It parses, traverses, and evaluates programs written in **SOL25**, provided as XML input. The interpreter supports object-oriented features such as classes, methods, message passing, inheritance, and built-in types (e.g., `Integer`, `String`, `Boolean`, `Nil`, `Block`).
 
-**Login:** xbasism00
+- The system uses an **Abstract Syntax Tree** (AST) to represent programs, a scope-based evaluation model, and a modular class hierarchy for built-in and user-defined types. It is executed by processing the Main class's run method, with results output via standard streams.
+---
+## Design Overview
+
+- The **SOL25** Interpreter follows a modular, object-oriented architecture with distinct components for parsing, traversing, evaluating, and executing SOL25 programs. The key layers are:
+
+    - **Input Processing:**
+
+        - The Parser class processes XML input using `DOMDocument`, creating a Program object with `ClassDefinition` instances.
+        - Each `ClassDefinition` includes methods (`Method`) and a parent class for inheritance.
+
+
+    - **Program Traversal:**
+
+        - The Traverser class initializes built-in classes (e.g., `Object`, `Integer`, `String`, `True`, `False`, `Nil`, `Block`) and registers user-defined classes in a Scope.
+        - Built-in classes inherit from `SOL25ObjectClass`, which extends `SOL25Class`, providing method dispatch via `switchMethod`.
+
+
+    - **Evaluation:**
+
+        - The `Evaluate` class initiates execution by invoking the Main class's run method, using a Scope to manage variables, classes, and singletons.
+        - The `Scope` class handles dynamic scoping, storing variables, class definitions, and singleton objects (`true`, `false`, `nil`).
+        - AST nodes (`Message`, `Literal`, `Variable`, `Block`, `Assignment`) are evaluated recursively, with `SOL25Object` handling message passing.
+
+
+    - **Object Model:**
+
+        - `SOL25Object` represents instances with attributes and a reference to their `SOL25Class`.
+        - `SOL25Class` manages built-in and user-defined methods, supporting inheritance.
+        - Built-in types (`SOL25Integer`, `SOL25String`, `SOL25True`, `SOL25False`, `SOL25Nil`, `SOL25Block`) implement type-specific methods.
+
+
+    - **Error Handling:**
+
+        - The `Exception` class, extending `IPPException`, handles errors with specific return codes (e.g., `INTERPRET_TYPE_ERROR`, `INTERPRET_DNU_ERROR`).
 
 ---
+## Class Diagram
 
-## Project Description
+The class diagram below illustrates the relationships between classes, including inheritance, composition, association, and dependencies among core components, **SOL25** types, and **AST** nodes.
+![Class Diagram](docs/class_diagram.png)
 
-The second part of the project involves creating an interpreter in PHP 8.4 that processes an XML representation of the AST of a program written in the SOL25 language. The interpreter must execute the program according to the language's semantics, handling input/output operations and managing runtime errors
+Note: To generate class-diagram.png, use the PlantUML code `puml.txt.` in `docs/`. Render it using a PlantUML tool (e.g., [online PlantUML server](http://www.plantuml.com)).
 
+---
+## File Structure
+The project consists of the following PHP files in the `IPP\Student namespace`:
+
+- **Program Representation:**
+
+    - `Program.php`: Manages a collection of class definitions.
+    - `ClassDefinition.php`: Defines a class with name, parent, and methods.
+
+- **Object Model:**
+
+    - `SOL25Class.php`: Base class for all classes, handling methods and inheritance.
+    - `SOL25ObjectClass.php`: Abstract base for built-in types.
+    - `SOL25Object.php`: Represents object instances.
+    - `SOL25Block.php`, `SOL25Integer.php`, `SOL25String.php`, `SOL25True.php`, `SOL25False.php`, `SOL25Nil.php`: Built-in type implementations.
+
+- **AST Nodes:**
+
+    - `Method.php`, `SOL25Method.php`: Represent methods with selectors and blocks.
+    - `Block.php`: Encapsulates instructions and parameters.
+    - `Message.php`: Models message passing.
+    - `Literal.php`: Represents constant values.
+    - `Variable.php`: Handles variable access.
+    - `Assignment.php`: Manages variable assignments.
+
+- **Execution Components**:
+    - `Parser.php`: Parses XML into a program AST.
+    - `Traverser.php`: Initializes and registers classes.
+    - `Evaluate.php`: Executes the program.
+    - `Scope.php`: Manages variables, classes, and singletons.
+    - `Interpreter.php`: Orchestrates execution.
+    - `Exception.php`: Custom error handling.
+
+
+ - **Core IPP classes** (`AbstractInterpreter`, `Settings`, `StreamWriter`, etc.) are in the IPP\Core namespace, they create the core of the program, I have no contribution to any files that are not in the `student/` folder.
+ ---
 ## Implementation Details
 
-The entire project consists of three main parts: the first part creates an AST tree from the DOM documents, then this tree is traversed, and classes and other elements are added to scopes. In the final part, the program is interpreted, and the main method is executed.
+- The **SOL25** Interpreter is implemented in PHP within the IPP\Student namespace, leveraging IPP\Core for I/O and exception handling. Key implementation aspects include:
+    - **Core Components**
 
-### Main OOP Design
+        - `Interpreter`: Extends `AbstractInterpreter`, coordinating parsing, traversal, and evaluation using `Parser`, `Traverser`, and `Evaluate`.
+        - `Parser`: Uses `DOM` parsing to convert XML into a Program object, creating AST nodes for classes, methods, and expressions.
+        - `Traverser`: Sets up built-in classes and user-defined classes in a Scope, ensuring proper initialization.
+        - `Evaluate`: Executes the Main class's run method, managing `self` and `super` in the Scope.
+        - `Scope`: Supports nested scopes via a stack, providing methods for variable/class lookup and assignment.
 
-Since everything in SOL25 is treated as an object, I designed my object-oriented architecture accordingly. It includes classes located in the `AstTree/` namespace that represent the AST nodes, corresponding to the core structural elements of SOL25 code.
-In addition, the `Sol25/` namespace contains classes that represent both built-in and user-defined classes. Each of these extends from `SolObjectClass`, which in turn inherits from `SolClass`. The SolClass serves as the foundation for representing user-defined classes.
-Object instantiation is handled through the `SolObject` class. This class is responsible not only for creating instances but also for managing message passing between objects.
-A key component of the system is the `SolMethod` class, which holds method parameters as well as the `method body`. The body is stored as an `AstBloc`k, which is evaluated during method execution by the interpreter.
+    - **AST Nodes**
 
+        - `Program`: Stores ClassDefinition objects for the **SOL25** program.
+        - `ClassDefinition`: Defines a class with a name, parent, and methods.
+        - `Method`: Represents a method with a selector and Block.
+        - `Block`: Executes a sequence of Assignment instructions in a new scope.
+        - `Message`: Handles message passing via `SOL25Object`::sendMessage.
+        - `Literal`: Converts constant values into `SOL25Object` instances.
+        - `Variable`: Resolves to `SOL25Object` or `SOL25Class` for `self`, `super`, or `class` names.
+        - `Assignment`: Assigns expression results to variables, supporting no-assignment (_) cases.
 
-### Dom Document to Ast Tree
+    - **Object Model**
 
-In `Interpreter.php`, I use `createProgram()` to create the Program AST node, which is implemented in `DomParser.php`. Then, I call the `createBlock()` and `createExpression()` functions to create the necessary nodes.
-
-### Walking trough tree
-
-Next, I send the AST tree to the `traverseProgram()` function, which I implement in `WalkingTree()`. I create an object for the scope, initialize the built-in classes and their methods, and then traverse the entire tree, adding class definitions and their methods to the scopes.
-
-### Evaluating Program
-
-At the beginning, the program retrieves the Main class and the run method, which is then evaluated. The evaluation works on the principle that each necessary AST node contains an `evaluate` method, which is called to return the required object. This allows the program to "dive" into execution and "emerge" as needed. Next, I will describe the most important files of this part.
-
-#### SolObjectClass.php switchMethod()
-
-This method is present in each BuiltIn class and contains a switch statement that decides, based on the selector's name, which method should be executed. It then executes the corresponding method and returns the resulting object. This mechanism allows the program to dynamically choose and invoke the correct method based on the provided selector.
-
-#### SolObject.php sendMessage()
-
-This method is used to determine the type of message being sent. It starts by checking if the specified method exists for the class. If it does, it evaluates whether the method is built-in or user-defined. Since user-defined methods can be evaluated from the tree, but built-ins are manually defined, the method processes these cases differently.
-
-If the message is not related to a method, the next step is to check if it is a value for a `SolObject` or a `new` or `from:` command. If neither of these is the case, the method proceeds to create an attribute for the class. This ensures that all types of messages, including method calls, value retrievals, and attribute assignments, are properly handled and processed.
-
-
-
-#### AstBlock.php evaluate()
-
-I chose this method to illustrate how `evaluate` works for other AST classes, as the process is very similar. First, we enter a new scope and add parameters as variables. If it's a block that receives messages, the parameter values are also set accordingly.
-
-Next, the instructions inside the block are evaluated — these are mostly of type `Assignment`. The last evaluated instruction is stored in `lastResult` and returned up. 
+        - `SOL25Class`: Manages methods and inheritance.
+        - `SOL25ObjectClass`: Provides method dispatch for built-in types.
+        - `SOL25Object`: Stores attributes and delegates method calls.
+        - `Built-in` Types:
+            - `SOL25Block`: Supports whileTrue and block evaluation.
+            - `SOL25Integer`: Implements arithmetic (e.g., plus:, timesRepeat:).
+            - `SOL25String`: Handles string operations (e.g., concatenateWith:, print).
+            - `SOL25True`/`SOL25False`: Supports boolean logic (e.g., ifTrue:ifFalse:).
+            - `SOL25Nil`: Represents the nil singleton.
 
 
-## UML Diagram
-For a more detailed view of the image, I recommend opening it from the `images/uml_diagram` folder.
 
-![Uml Diagram](images/uml_diagram.png)
+    - **Error Handling**
 
+        - `Exception` extends `IPPException`, using `ReturnCode` constants for errors like `INTERPRET_DNU_ERROR` (undefined method) or `INTERPRET_VALUE_ERROR` (e.g., division by zero).
+        - Errors are thrown during parsing, traversal, or evaluation for invalid inputs or runtime issues.
+
+    - **I/O Handling**
+
+        - `StreamWriter`, `FileInputReader`, and `FileSourceReader` implement `OutputWriter`, `InputReader`, and `SourceReader` interfaces for standard I/O and file operations.
+        - `Settings` configures input/output streams via command-line arguments.
+---
+## Usage
+- To run the SOL25 Interpreter:
+
+    - Ensure PHP is installed with the DOM extension enabled.
+
+    - Prepare a **SOL25** program in an XML file (e.g., program.xml).
+
+    - Execute the interpreter:
+        - `php interpreter.php --source=program.xml --input=input.txt`
+
+
+    - The interpreter parses the XML, initializes the scope, evaluates the Main class's run method, and outputs results via StreamWriter.
+- To compile the Interpreter, use `make` in the root folder of the project.
+
+---
 ## Testing
-For testing, I used student-provided tests, which thoroughly tested my program and covered a wide range of scenarios. [IPP_proj2-tests](https://github.com/Kubikuli/IPP_proj2-tests)
+- The **SOL25** Interpreter was tested using public tests from the proffesors and student tests available at https://github.com/Kubikuli/IPP_proj2-tests. The tests cover various aspects of the interpreter's functionality, including:
 
-![Testing Info](images/testing_info.png)
+    - **Parsing**: Valid and invalid XML inputs to ensure correct **AST** construction and error handling.
+    - **Class and Method Handling**: User-defined classes, inheritance, and method invocation.
+    - **Built-in Types**: Operations on `Integer`, `String`, `Boolean`, `Nil`, and `Block` types.
+    - **Message Passing**: Correct evaluation of messages with varying receivers and arguments.
+    - **Error Cases**: Type errors, undefined methods, division by zero, and invalid variable access.
+---
+## Bibliography
 
-## AI Usage in Project
-
-At the beginning, I discussed with AI what the best approach might be and consulted it with my ideas. This gave me a better perspective on how the interpreter could work. I also used AI to help correct grammatical errors and created some error messages in the code.
+**Smalltalk-80**: The Language and its Implementation by Adele Goldberg and David Robson (1983): Inspired SOL25's object-oriented model and message-passing semantics.
+**PHP Manual**: Official documentation for DOM parsing and OOP (https://www.php.net/manual/en/).
+**PlantUML Documentation**: Used for generating the class diagram (https://plantuml.com/).
+**Chat GPT (AI)**: Used for explaining harder-to-grasp concepts and help with documentation design. It also helped with debugging and refactoring source code.

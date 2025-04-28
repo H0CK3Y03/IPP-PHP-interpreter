@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: Assignment.php
+
 namespace IPP\Student;
 
 use IPP\Student\Block;

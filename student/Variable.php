@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: Variable.php
+
 namespace IPP\Student;
 
 use IPP\Student\SOL25Class;

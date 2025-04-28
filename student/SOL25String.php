@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: SOL25String.php
+
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;

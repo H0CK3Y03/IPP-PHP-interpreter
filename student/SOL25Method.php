@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: SOL25Method.php
+
 namespace IPP\Student;
 
 use IPP\Student\Block;

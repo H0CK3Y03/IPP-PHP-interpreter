@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: Block.php
+
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;

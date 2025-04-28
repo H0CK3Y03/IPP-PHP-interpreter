@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: ClassDefinition.php
+
 namespace IPP\Student;
 
 /**

@@ -1,5 +1,9 @@
 <?php
 
+// Author: Adam Veselý
+// Login: xvesela00
+// File: Method.php
+
 namespace IPP\Student;
 
 /**
