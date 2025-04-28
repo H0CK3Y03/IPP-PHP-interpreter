@@ -29,26 +29,51 @@ class Parser
     {
         $program = new Program();
 
-        // Parse all <class> elements and add them to the program
         foreach ($dom->getElementsByTagName('class') as $class) {
-            $classDefinition = new ClassDefinition(
-                $class->getAttribute('name'),
-                $class->getAttribute('parent')
-            );
-
-            // Parse <method> elements inside the class
-            foreach ($class->getElementsByTagName('method') as $method) {
-                $blockNode = $method->getElementsByTagName('block')->item(0);
-                if ($blockNode) {
-                    $methodDefinition = new Method($method->getAttribute('selector'), $this->createBlock($blockNode));
-                    $classDefinition->addMethod($methodDefinition);
-                }
-            }
-
+            $classDefinition = $this->parseClass($class);
             $program->addClass($classDefinition);
         }
 
         return $program;
+    }
+
+    /**
+     * Parses a class node into a ClassDefinition object.
+     *
+     * @param DOMElement $class The class XML element.
+     * @return ClassDefinition The parsed ClassDefinition object.
+     */
+    private function parseClass(DOMElement $class): ClassDefinition
+    {
+        $classDefinition = new ClassDefinition(
+            $class->getAttribute('name'),
+            $class->getAttribute('parent')
+        );
+
+        foreach ($class->getElementsByTagName('method') as $method) {
+            $methodDefinition = $this->parseMethod($method);
+            $classDefinition->addMethod($methodDefinition);
+        }
+
+        return $classDefinition;
+    }
+
+    /**
+     * Parses a method node into a Method object.
+     *
+     * @param DOMElement $method The method XML element.
+     * @return Method The parsed Method object.
+     */
+    private function parseMethod(DOMElement $method): Method
+    {
+        $blockNode = $method->getElementsByTagName('block')->item(0);
+        if ($blockNode) {
+            return new Method(
+                $method->getAttribute('selector'),
+                $this->createBlock($blockNode)
+            );
+        }
+        throw new Exception("Method block is missing", ReturnCode::INVALID_SOURCE_STRUCTURE_ERROR);
     }
 
     /**
@@ -62,7 +87,6 @@ class Parser
         $block = new Block((int) $blockNode->getAttribute('arity'));
         $block->params = $this->parseBlockParameters($blockNode);
         $block->instructions = $this->parseAssignments($blockNode);
-
         return $block;
     }
 
@@ -168,8 +192,7 @@ class Parser
                     if (!$receiver) {
                         $receiver = $this->createExpression($sendChild);
                     }
-                }
-                elseif ($sendChild->nodeName === 'arg') {
+                } elseif ($sendChild->nodeName === 'arg') {
                     $order = (int) $sendChild->getAttribute('order');
                     $exprNode = $sendChild->getElementsByTagName('expr')->item(0);
                     if ($exprNode instanceof DOMElement) {

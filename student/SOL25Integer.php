@@ -35,7 +35,7 @@ class SOL25Integer extends SOL25ObjectClass
         switch ($selectorName) {
             case 'new':
                 // Create a new Integer object with value 0
-                return new SOL25Object($scope->fetchClass($this->name), 0);
+                return $this->createNewIntegerObject($scope, 0);
             case 'isNumber':
                 // Return true if it's a number
                 return $this->boolResult(true, $scope);
@@ -44,17 +44,6 @@ class SOL25Integer extends SOL25ObjectClass
             case 'isNil':
                 // Return false for non-number types
                 return $this->boolResult(false, $scope);
-            case 'identicalTo:':
-                // Check if the receiver is identical to the sender object
-                return $this->boolResult($receiverObj->class === $senderObjs[0]->evaluate($scope)->class, $scope);
-            case 'equalTo:':
-                // Check if values are equal (==)
-                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
-                return $this->boolResult($receiverVal == $senderVal, $scope);
-            case 'greaterThan:':
-                // Check if the receiver value is greater than the sender value
-                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
-                return $this->boolResult($receiverVal > $senderVal, $scope);
             case 'plus:':
                 // Addition of the receiver value and sender value
                 $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
@@ -77,6 +66,17 @@ class SOL25Integer extends SOL25ObjectClass
             case 'asInteger':
                 // Return the receiver object as an Integer object
                 return $receiverObj;
+            case 'identicalTo:':
+                // Check if the receiver is identical to the sender object
+                return $this->boolResult($receiverObj->class === $senderObjs[0]->evaluate($scope)->class, $scope);
+            case 'greaterThan:':
+                // Check if the receiver value is greater than the sender value
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
+                return $this->boolResult($receiverVal > $senderVal, $scope);
+            case 'equalTo:':
+                // Check if values are equal (==)
+                $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
+                return $this->boolResult($receiverVal == $senderVal, $scope);
             case 'timesRepeat:':
                 // Repeat the given block a number of times as per the receiver value
                 return $this->handleTimesRepeat($senderObjs, $scope, $receiverVal);
