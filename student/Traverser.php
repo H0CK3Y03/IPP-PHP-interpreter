@@ -15,7 +15,7 @@ use IPP\Student\SOL25ObjectClass;
 use IPP\Student\SOL25String;
 use IPP\Student\SOL25True;
 use IPP\Student\Scope;
-use IPP\Student\Exception\Exception;
+use IPP\Student\Exception;
 
 class Traverser
 {
@@ -66,6 +66,7 @@ class Traverser
 
     /**
      * Helper to add built-in methods to a class.
+     * @param string[] $methods
      */
     private function addMethods(SOL25ObjectClass $class, array $methods): void
     {
@@ -103,8 +104,8 @@ class Traverser
             foreach ($classDef->methods as $methodName => $methodDef) {
                 $method = new SOL25Method(
                     $methodDef->selectorName,
-                    $methodDef->body,
-                    $methodDef->body->params
+                    $methodDef->block,
+                    $methodDef->block->params
                 );
                 $class->addMethod($method);
             }

@@ -20,7 +20,7 @@ class SOL25String extends SOL25ObjectClass
      * @param SOL25Object $receiverObj The receiver object for the method call.
      * @param string $selectorName The name of the selector (method or attribute).
      * @param Scope $scope The current execution scope.
-     * @param array|null $senderObj Optional array of sender objects for method arguments.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object|null> $senderObj
      * 
      * @return SOL25Object The result of the method call.
      * @throws Exception If the method is not found.
@@ -73,10 +73,11 @@ class SOL25String extends SOL25ObjectClass
      * Compares the receiver object to the sender object for identity.
      *
      * @param SOL25Object $receiverObj The receiver object.
-     * @param array $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      * @param Scope $scope The current scope.
      * 
      * @return SOL25Object The result of the comparison (true or false).
+     * 
      */
     private function evaluateIdenticalTo(SOL25Object $receiverObj, array $senderObj, Scope $scope): SOL25Object
     {
@@ -86,7 +87,7 @@ class SOL25String extends SOL25ObjectClass
      * Compares the receiver string value to the sender string value for equality.
      *
      * @param SOL25Object $receiverObj The receiver object.
-     * @param array $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      * @param Scope $scope The current scope.
      * 
      * @return SOL25Object The result of the equality check (true or false).
@@ -127,7 +128,7 @@ class SOL25String extends SOL25ObjectClass
      * Concatenates the receiver string with another string.
      *
      * @param SOL25Object $receiverObj The receiver object (String).
-     * @param array $senderObj The sender object(s) (String to concatenate).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      * @param Scope $scope The current execution scope.
      * 
      * @return SOL25Object The concatenated String object, or Nil if the types do not match.
@@ -146,7 +147,7 @@ class SOL25String extends SOL25ObjectClass
      * Extracts a substring from the receiver string, based on the start and end indexes.
      *
      * @param SOL25Object $receiverObj The receiver string object.
-     * @param array $senderObj The sender objects (start and end indexes).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      * @param Scope $scope The current execution scope.
      * 
      * @return SOL25Object The substring as a String object, or Nil if invalid indexes are provided.

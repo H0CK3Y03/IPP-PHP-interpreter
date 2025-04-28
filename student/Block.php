@@ -44,21 +44,21 @@ class Block
     }
 
     /**
-     * Evaluates the block within a new scope, with optional arguments.
+     * Evaluates the block within a new scope, with optional args.
      *
      * @param Scope $scope
-     * @param array<Message|Literal|Block|Variable|Method|Assignment|SOL25Object>|null $arguments
+     * @param array<Message|Literal|Block|Variable|Method|Assignment|SOL25Object>|null $args
      * @return SOL25Object
      *
-     * @throws Exception if the number of arguments doesn't match the number of parameters
+     * @throws Exception if the number of args doesn't match the number of parameters
      */
-    public function evaluate(Scope $scope, ?array $arguments = null): SOL25Object
+    public function evaluate(Scope $scope, ?array $args = null): SOL25Object
     {
         $scope->enterScope();
 
-        $this->validateArguments($arguments);
+        $this->validateargs($args);
 
-        $this->bindParameters($scope, $arguments);
+        $this->bindParameters($scope, $args);
 
         $lastResult = $this->executeInstructions($scope);
 
@@ -68,33 +68,33 @@ class Block
     }
 
     /**
-     * Validates that the number of passed arguments matches the number of expected parameters.
+     * Validates that the number of passed args matches the number of expected parameters.
      *
-     * @param array|null $arguments
+     * @param array<int, Message|Literal|Block|Variable|Method|Assignment|SOL25Object>|null $args
      * @throws Exception
      */
-    private function validateArguments(?array $arguments): void
+    private function validateargs(?array $args): void
     {
-        if (($arguments === null && $this->paramCount > 0) || ($arguments !== null && count($arguments) !== $this->paramCount)) {
-            throw new Exception("Number of sent arguments (" . ($arguments !== null ? count($arguments) : 'null') . ")  doesn't match the number of parameters in the block (" . $paramCount . ")\n", ReturnCode::INTERPRET_DNU_ERROR);
+        if (($args === null && $this->paramCount > 0) || ($args !== null && count($args) !== $this->paramCount)) {
+            throw new Exception("Number of sent args (" . ($args !== null ? count($args) : 'null') . ") doesn't match the number of parameters in the block (" . $this->paramCount . ")\n", ReturnCode::INTERPRET_DNU_ERROR);
         }
     }
 
     /**
-     * Binds parameters in the scope, either by adding them or setting their value from arguments.
+     * Binds parameters in the scope, either by adding them or setting their value from args.
      *
      * @param Scope $scope
-     * @param array|null $arguments
+     * @param array<int, Message|Literal|Block|Variable|Method|Assignment|SOL25Object>|null $args
      */
-    private function bindParameters(Scope $scope, ?array $arguments): void
+    private function bindParameters(Scope $scope, ?array $args): void
     {
         foreach ($this->params as $index => $paramName) {
-            if ($arguments === null) {
+            if ($args === null) {
                 $scope->addVar($paramName);
             }
             else {
-                $argument = $arguments[$index];
-                $value = ($argument instanceof SOL25Object) ? $argument : $argument->evaluate($scope);
+                $arg = $args[$index];
+                $value = ($arg instanceof SOL25Object) ? $arg : $arg->evaluate($scope);
                 $scope->setVar($paramName, $value);
             }
         }

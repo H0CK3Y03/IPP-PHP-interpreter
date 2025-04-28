@@ -19,17 +19,17 @@ class Method
      *
      * @var Block
      */
-    public Block $body;
+    public Block $block;
 
     /**
      * Method constructor.
      *
      * @param string $selectorName Name of the method (selector).
-     * @param Block $body Block containing method instructions.
+     * @param Block $block Block containing method instructions.
      */
-    public function __construct(string $selectorName, Block $body)
+    public function __construct(string $selectorName, Block $block)
     {
         $this->selectorName = $selectorName;
-        $this->body = $body;
+        $this->block = $block;
     }
 }

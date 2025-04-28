@@ -15,7 +15,7 @@ use IPP\Student\Scope;
 class SOL25False extends SOL25ObjectClass
 {
     /**
-     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * @return SOL25Object
      */
     public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObj): SOL25Object
@@ -52,7 +52,7 @@ class SOL25False extends SOL25ObjectClass
                 // Short-circuit logic for 'or'
                 return $receiverVal ? $scope->getSingleton('true') : $senderObj[0]->evaluate($scope);
             case 'ifTrue:ifFalse:':
-                if ($receiverObj->class instanceof SolTrueClass) {
+                if ($receiverObj->class instanceof SOL25True) {
                     return $senderObj[0]->evaluate($scope);
                 }
                 if ($receiverObj->class instanceof SOL25False) {

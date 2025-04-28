@@ -70,7 +70,7 @@ class Parser
      * Parses the parameters of a block and returns them in order.
      *
      * @param DOMElement $blockNode The block XML element.
-     * @return array The parsed parameters.
+     * @return array<int, string> The parsed parameters.
      */
     private function parseBlockParameters(DOMElement $blockNode): array
     {
@@ -90,7 +90,7 @@ class Parser
      * Parses the assignment statements inside a block.
      *
      * @param DOMElement $blockNode The block XML element.
-     * @return array The parsed assignment statements.
+     * @return array<int, Assignment> The parsed assignment statements.
      */
     private function parseAssignments(DOMElement $blockNode): array
     {

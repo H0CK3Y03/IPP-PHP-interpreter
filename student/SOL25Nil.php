@@ -20,7 +20,7 @@ class SOL25Nil extends SOL25ObjectClass
      * @param SOL25Object $receiverObj The receiver object for the method call.
      * @param string $selectorName The name of the method to invoke.
      * @param Scope $scope The current execution scope.
-     * @param array|null $senderObj An array of sender objects involved in the method call.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * 
      * @return SOL25Object The result of the method call.
      * @throws Exception If an unknown method is called.
@@ -72,7 +72,7 @@ class SOL25Nil extends SOL25ObjectClass
      * Compares the class of the receiver object with the sender object.
      *
      * @param SOL25Object $receiverObj The receiver object.
-     * @param array|null $senderObj The sender object array.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * @param Scope $scope The current execution scope.
      * 
      * @return SOL25Object The boolean result of the comparison.
@@ -87,7 +87,7 @@ class SOL25Nil extends SOL25ObjectClass
      * Compares the value of the receiver object with the value of the sender object.
      *
      * @param mixed $receiverValue The value of the receiver object.
-     * @param array|null $senderObj The sender object array.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * @param Scope $scope The current execution scope.
      * 
      * @return SOL25Object The boolean result of the comparison.

@@ -65,6 +65,7 @@ class SOL25True extends SOL25ObjectClass
 
     /**
      * Evaluates 'identicalTo:' method.
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      */
     private function evaluateIdenticalTo(SOL25Object $receiverObj, array $senderObj, Scope $scope): SOL25Object
     {
@@ -76,8 +77,9 @@ class SOL25True extends SOL25ObjectClass
 
     /**
      * Evaluates 'equalTo:' method.
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      */
-    private function evaluateEqualTo($receiverVal, array $senderObj, Scope $scope): SOL25Object
+    private function evaluateEqualTo(mixed $receiverVal, array $senderObj, Scope $scope): SOL25Object
     {
         $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
         return $this->boolResult($receiverVal == $senderVal, $scope);
@@ -85,6 +87,7 @@ class SOL25True extends SOL25ObjectClass
 
     /**
      * Evaluates 'ifTrue:ifFalse:' method based on the receiver's class.
+     * @param array<Message|Literal|Block|Variable|Method|SOL25Object> $senderObj
      */
     private function evaluateIfTrueIfFalse(SOL25Object $receiverObj, array $senderObj, Scope $scope): SOL25Object
     {

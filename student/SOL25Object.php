@@ -61,7 +61,7 @@ class SOL25Object
      * @param SOL25Object $receiverObj The receiver object for the message.
      * @param string $selector The selector (method name or attribute).
      * @param Scope $scope The current execution scope.
-     * @param array|null $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * 
      * @return SOL25Object The result of the message handling.
      * @throws Exception If the method or attribute is not found.
@@ -96,7 +96,7 @@ class SOL25Object
      * @param SOL25Object $receiverObj The receiver object.
      * @param string $selector The method or attribute selector.
      * @param Scope $scope The current execution scope.
-     * @param array|null $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * 
      * @return SOL25Object The result of the message handling.
      * @throws Exception If the attribute is not found.
@@ -166,9 +166,9 @@ class SOL25Object
      * Handles user-defined methods by evaluating their blocks.
      * 
      * @param SOL25Object $receiverObj The receiver object for the method.
-     * @param array $methodInfo The method information.
+     * @param array{method: Method} $methodInfo The method information.
      * @param Scope $scope The current execution scope.
-     * @param array|null $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * 
      * @return SOL25Object The result of the method evaluation.
      */

@@ -21,7 +21,7 @@ class SOL25ObjectClass extends SOL25Class
      * @param SOL25Object $receiverObj The receiver object for the method call.
      * @param string $selectorName The name of the selector (method or attribute).
      * @param Scope $scope The current execution scope.
-     * @param array|null $senderObj Optional array of sender objects for method arguments.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * 
      * @return SOL25Object The result of the method call.
      * @throws Exception If the method is not found.
@@ -54,7 +54,7 @@ class SOL25ObjectClass extends SOL25Class
      * Compares the class of the receiver object with the sender object.
      *
      * @param SOL25Object $receiverObj The receiver object.
-     * @param array|null $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * @param Scope $scope The current scope.
      *
      * @return SOL25Object The result of the comparison (true or false).
@@ -69,7 +69,7 @@ class SOL25ObjectClass extends SOL25Class
      * Compares the value of the receiver object with the value of the sender object.
      *
      * @param SOL25Object $receiverObj The receiver object.
-     * @param array|null $senderObj The sender object(s).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * @param Scope $scope The current scope.
      *
      * @return SOL25Object The result of the comparison (true or false).

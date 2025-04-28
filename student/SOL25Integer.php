@@ -23,7 +23,7 @@ class SOL25Integer extends SOL25ObjectClass
      * @param SOL25Object $receiverObj The object receiving the message.
      * @param string $selectorName The method name to be invoked.
      * @param Scope $scope The current scope.
-     * @param array|null $senderObjs The objects sending the message, optional.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObjs
      * @return SOL25Object The result of the method invocation.
      */
     public function switchMethod(SOL25Object $receiverObj, string $selectorName, Scope $scope, ?array $senderObjs): SOL25Object
@@ -121,7 +121,7 @@ class SOL25Integer extends SOL25ObjectClass
     /**
      * Handles the 'timesRepeat:' method by repeating the block the given number of times.
      *
-     * @param array|null $senderObjs The sender objects (e.g., blocks) to evaluate.
+     *@param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObjs
      * @param Scope $scope The current scope.
      * @param int $receiverVal The number of repetitions.
      * @return SOL25Object The last result or 'nil' if no result exists.
@@ -145,7 +145,7 @@ class SOL25Integer extends SOL25ObjectClass
      *
      * @param mixed $senderObj The sender object to evaluate.
      * @param Scope $scope The current scope.
-     * @param array $iter The iteration objects.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object> $iter The iteration objects.
      * @return SOL25Object The evaluated result.
      */
     private function evaluateSender($senderObj, Scope $scope, array $iter): SOL25Object
