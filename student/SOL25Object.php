@@ -134,7 +134,7 @@ class SOL25Object
             return $attrValue;
         }
 
-        throw new Exception("Error: Attribute '$selector' not found in class or parent.\n", ReturnCode::INTERPRET_DNU_ERROR);
+        throw new Exception("Attribute '$selector' not found in class or parent.\n", ReturnCode::INTERPRET_DNU_ERROR);
     }
 
     /**
