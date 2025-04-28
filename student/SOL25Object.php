@@ -14,7 +14,6 @@ use IPP\Core\ReturnCode;
 class SOL25Object
 {
     public SOL25Class $class;
-
     /**
      * @var array<string, mixed>
      */
@@ -71,23 +70,13 @@ class SOL25Object
         // Attempt to get the method information for the selector
         $methodInfo = $this->class->getMethod($selector);
 
-        // Handle case where no method was found
+        // If no method is found, handle the case
         if (!$methodInfo) {
             return $this->handleNoMethodFound($receiverObj, $selector, $scope, $senderObj);
         }
 
-        // Handle user-defined method call
-        if ($methodInfo['type'] === 'user') {
-            return $this->handleUserMethod($receiverObj, $methodInfo, $scope, $senderObj);
-        }
-
-        // Handle built-in method call
-        if ($methodInfo['type'] === 'builtin') {
-            return $methodInfo['class']->switchMethod($receiverObj, $selector, $scope, $senderObj);
-        }
-
-        // Return 'nil' if method type is not recognized
-        return $scope->fetchSingleton('nil');
+        // Delegate to method type handler (user-defined or built-in)
+        return $this->handleMethodType($methodInfo, $receiverObj, $scope, $senderObj);
     }
 
     /**
@@ -104,17 +93,13 @@ class SOL25Object
     private function handleNoMethodFound(SOL25Object $receiverObj, string $selector, Scope $scope, ?array $senderObj): SOL25Object
     {
         // Handle 'value' and 'value:' selectors for SOL25Block
-        if ($selector === 'value' && $this->class instanceof SOL25Block) {
-            return $receiverObj->getAttr('__value__')->evaluate($scope, null);
+        if ($this->isBlockValueSelector($selector)) {
+            return $this->evaluateBlockValue($receiverObj, $scope, $senderObj);
         }
 
-        if (str_starts_with($selector, 'value:') && $this->class instanceof SOL25Block) {
-            return $receiverObj->getAttr('__value__')->evaluate($scope, $senderObj);
-        }
-
-        // Handle 'from:' selector for creating a new SOL25Object from sender value
-        if (str_starts_with($selector, 'from:')) {
-            return new SOL25Object($scope->fetchClass($this->class->name), $senderObj[0]->evaluate($scope)->getAttr('__value__'));
+        // Handle 'from:' selector for creating a new SOL25Object
+        if ($this->isFromSelector($selector)) {
+            return $this->createFromSenderValue($scope, $senderObj);
         }
 
         // Handle 'new' selector to return a new instance of the class
@@ -123,18 +108,50 @@ class SOL25Object
         }
 
         // Handle attribute setting with 'selector:' format
-        if (str_ends_with($selector, ':')) {
-            $this->setAttr(rtrim($selector, ':'), $senderObj[0]->evaluate($scope));
-            return $this;
+        if ($this->isAttributeSetter($selector)) {
+            return $this->setAttributeFromSender($selector, $senderObj, $scope);
         }
 
-        // Return attribute value or throw an error if not found
-        $attrValue = $this->getAttr($selector);
-        if ($attrValue !== null) {
-            return $attrValue;
-        }
+        // Return attribute value or throw error if not found
+        return $this->getAttributeOrThrow($selector);
+    }
 
-        throw new Exception("Attribute '$selector' not found in class or parent.\n", ReturnCode::INTERPRET_DNU_ERROR);
+    /**
+     * Determines if the selector is for 'value' or 'value:' for blocks.
+     *
+     * @param string $selector The selector to check.
+     * 
+     * @return bool Whether the selector is related to block values.
+     */
+    private function isBlockValueSelector(string $selector): bool
+    {
+        return ($selector === 'value' || str_starts_with($selector, 'value:')) && $this->class instanceof SOL25Block;
+    }
+
+    /**
+     * Evaluates the block's value based on the sender objects.
+     *
+     * @param SOL25Object $receiverObj The receiver object.
+     * @param Scope $scope The current scope.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
+     * 
+     * @return SOL25Object The result of evaluating the block's value.
+     */
+    private function evaluateBlockValue(SOL25Object $receiverObj, Scope $scope, ?array $senderObj): SOL25Object
+    {
+        return $receiverObj->getAttr('__value__')->evaluate($scope, $senderObj);
+    }
+
+    /**
+     * Checks if the selector is a 'from:' selector.
+     *
+     * @param string $selector The selector to check.
+     * 
+     * @return bool Whether the selector is 'from:'.
+     */
+    private function isFromSelector(string $selector): bool
+    {
+        return str_starts_with($selector, 'from:');
     }
 
     /**
@@ -163,16 +180,77 @@ class SOL25Object
     }
 
     /**
+     * Creates a new SOL25Object from the sender value.
+     *
+     * @param Scope $scope The current scope.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
+     * 
+     * @return SOL25Object A new SOL25Object based on the sender's value.
+     */
+    private function createFromSenderValue(Scope $scope, ?array $senderObj): SOL25Object
+    {
+        return new SOL25Object(
+            $scope->fetchClass($this->class->name),
+            $senderObj[0]->evaluate($scope)->getAttr('__value__')
+        );
+    }
+
+    /**
+     * Determines if the selector is an attribute setter (ends with ':').
+     *
+     * @param string $selector The selector to check.
+     * 
+     * @return bool Whether the selector is an attribute setter.
+     */
+    private function isAttributeSetter(string $selector): bool
+    {
+        return str_ends_with($selector, ':');
+    }
+
+    /**
+     * Sets an attribute value based on the sender object.
+     *
+     * @param string $selector The selector (attribute name).
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
+     * @param Scope $scope The current execution scope.
+     * 
+     * @return SOL25Object The current object.
+     */
+    private function setAttributeFromSender(string $selector, ?array $senderObj, Scope $scope): SOL25Object
+    {
+        $this->setAttr(rtrim($selector, ':'), $senderObj[0]->evaluate($scope));
+        return $this;
+    }
+
+    /**
+     * Retrieves the attribute value or throws an error if not found.
+     *
+     * @param string $selector The attribute to retrieve.
+     * 
+     * @return SOL25Object The attribute value.
+     * @throws Exception If the attribute is not found.
+     */
+    private function getAttributeOrThrow(string $selector): SOL25Object
+    {
+        $attrValue = $this->getAttr($selector);
+        if ($attrValue !== null) {
+            return $attrValue;
+        }
+
+        throw new Exception("Attribute '$selector' not found in class or parent.\n", ReturnCode::INTERPRET_DNU_ERROR);
+    }
+
+    /**
      * Handles user-defined methods by evaluating their blocks.
      * 
+     * @param array{method: Method, type: string, class?: mixed} $methodInfo The method information.
      * @param SOL25Object $receiverObj The receiver object for the method.
-     * @param array{method: Method} $methodInfo The method information.
      * @param Scope $scope The current execution scope.
      * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
      * 
      * @return SOL25Object The result of the method evaluation.
      */
-    private function handleUserMethod(SOL25Object $receiverObj, array $methodInfo, Scope $scope, ?array $senderObj): SOL25Object
+    private function handleUserMethod(array $methodInfo, SOL25Object $receiverObj, Scope $scope, ?array $senderObj): SOL25Object
     {
         $scope->setSelf($receiverObj);
         $superInstance = new SOL25Object($receiverObj->class->parent);
@@ -182,5 +260,27 @@ class SOL25Object
         return isset($senderObj[0])
             ? $methodInfo['method']->block->evaluate($scope, $senderObj)
             : $methodInfo['method']->block->evaluate($scope);
+    }
+
+    /**
+     * Handles built-in methods based on method info.
+     * 
+     * @param array{method: Method, type: string, class?: mixed} $methodInfo The method information.
+     * @param SOL25Object $receiverObj The receiver object.
+     * @param Scope $scope The current execution scope.
+     * @param array<int, Message|Literal|Block|Variable|Method|SOL25Object>|null $senderObj
+     * 
+     * @return SOL25Object The result of the method evaluation.
+     */
+    private function handleMethodType(array $methodInfo, SOL25Object $receiverObj, Scope $scope, ?array $senderObj): SOL25Object
+    {
+        if ($methodInfo['type'] === 'user') {
+            return $this->handleUserMethod($methodInfo, $receiverObj, $scope, $senderObj);
+        }
+
+        // Handle built-in method call
+        return $methodInfo['type'] === 'builtin'
+            ? $methodInfo['class']->switchMethod($receiverObj, $methodInfo['method'], $scope, $senderObj)
+            : $scope->fetchSingleton('nil');
     }
 }
