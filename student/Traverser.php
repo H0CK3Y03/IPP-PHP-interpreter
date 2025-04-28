@@ -15,12 +15,16 @@ use IPP\Student\SOL25ObjectClass;
 use IPP\Student\SOL25String;
 use IPP\Student\SOL25True;
 use IPP\Student\Scope;
+use IPP\Student\Exception\Exception;
 
 class Traverser
 {
+    /**
+     * Initialize the built-in classes, methods, and singleton objects in the provided scope.
+     */
     public function initialize(Scope $scope): void
     {
-        // Create builtin classes and register them
+        // Create built-in classes
         $objectClass = new SOL25ObjectClass('Object');
         $intClass = new SOL25Integer('Integer', $objectClass);
         $stringClass = new SOL25String('String', $objectClass);
@@ -29,30 +33,21 @@ class Traverser
         $nilClass = new SOL25Nil('Nil', $objectClass);
         $blockClass = new SOL25Block('Block', $objectClass);
 
-        $objectClassMethods = ['identicalTo:', 'equalTo:', 'asString', 'isNumber', 'isString', 'isBlock', 'isNil'];
-        $intClassMethods = array_merge($objectClassMethods, ['greaterThan:', 'plus:', 'minus:', 'multiplyBy:', 'divBy:', 'asInteger', 'timesRepeat:']);
-        $stringClassMethods = array_merge($objectClassMethods, ['read', 'print', 'asInteger', 'concatenateWith:', 'startsWith:endsBefore:']);
-        $trueFalseClassMethods = array_merge($objectClassMethods, ['not', 'and:', 'or:', 'ifTrue:ifFalse:']);
-        $blockClassMethods = array_merge($objectClassMethods, ['whileTrue']);
+        // Define method sets
+        $objectMethods = ['identicalTo:', 'equalTo:', 'asString', 'isNumber', 'isString', 'isBlock', 'isNil'];
+        $integerMethods = array_merge($objectMethods, ['greaterThan:', 'plus:', 'minus:', 'multiplyBy:', 'divBy:', 'asInteger', 'timesRepeat:']);
+        $stringMethods = array_merge($objectMethods, ['read', 'print', 'asInteger', 'concatenateWith:', 'startsWith:endsBefore:']);
+        $boolMethods = array_merge($objectMethods, ['not', 'and:', 'or:', 'ifTrue:ifFalse:']);
+        $blockMethods = array_merge($objectMethods, ['whileTrue']);
 
-        // Add methods to corresponding classes
-        foreach ($objectClassMethods as $selector) {
-            $objectClass->addBuiltInMethod($selector);
-            $nilClass->addBuiltInMethod($selector);
-        }
-        foreach ($intClassMethods as $selector) {
-            $intClass->addBuiltInMethod($selector);
-        }
-        foreach ($stringClassMethods as $selector) {
-            $stringClass->addBuiltInMethod($selector);
-        }
-        foreach ($trueFalseClassMethods as $selector) {
-            $trueClass->addBuiltInMethod($selector);
-            $falseClass->addBuiltInMethod($selector);
-        }
-        foreach ($blockClassMethods as $selector) {
-            $blockClass->addBuiltInMethod($selector);
-        }
+        // Add methods to classes
+        $this->addMethods($objectClass, $objectMethods);
+        $this->addMethods($nilClass, $objectMethods);
+        $this->addMethods($intClass, $integerMethods);
+        $this->addMethods($stringClass, $stringMethods);
+        $this->addMethods($trueClass, $boolMethods);
+        $this->addMethods($falseClass, $boolMethods);
+        $this->addMethods($blockClass, $blockMethods);
 
         // Register classes in scope
         $scope->registerClass('Object', $objectClass);
@@ -63,45 +58,57 @@ class Traverser
         $scope->registerClass('Nil', $nilClass);
         $scope->registerClass('Block', $blockClass);
 
-        // Create singleton objects
-        $trueObj = new SOL25Object($trueClass);
-        $falseObj = new SOL25Object($falseClass);
-        $nilObj = new SOL25Object($nilClass);
-
-        // Register singleton objects
-        $scope->setSingleton('true', $trueObj);
-        $scope->setSingleton('false', $falseObj);
-        $scope->setSingleton('nil', $nilObj);
+        // Create and register singleton objects
+        $scope->setSingleton('true', new SOL25Object($trueClass));
+        $scope->setSingleton('false', new SOL25Object($falseClass));
+        $scope->setSingleton('nil', new SOL25Object($nilClass));
     }
 
+    /**
+     * Helper to add built-in methods to a class.
+     */
+    private function addMethods(SOL25ObjectClass $class, array $methods): void
+    {
+        foreach ($methods as $selector) {
+            $class->addBuiltInMethod($selector);
+        }
+    }
+
+    /**
+     * Traverse a Program and set up all user-defined classes into a new scope.
+     *
+     * @throws Exception
+     */
     public function traverseProgram(Program $program, string $input = ''): Scope
     {
         $scope = new Scope($input);
         $this->initialize($scope);
 
-        // Traverse classes in the program
         foreach ($program->classes as $className => $classDef) {
             $parent = null;
 
-            // Ensure 'Object' class has no parent
             if (empty($classDef->parent)) {
                 if ($className !== 'Object') {
-                    throw new InterDException("Class '{$className}' must have a parent (except for 'Object')", ReturnCode::INTERPRET_TYPE_ERROR);
+                    throw new Exception(
+                        "Class '{$className}' must have a parent (except for 'Object')",
+                        ReturnCode::INTERPRET_TYPE_ERROR
+                    );
                 }
             } else {
-                // Get parent class from scope
-                $parentClass = $scope->getClass($classDef->parent);
-                $parent = $parentClass;
+                $parent = $scope->getClass($classDef->parent);
             }
 
-            // Create class and add its methods
             $class = new SOL25Class($classDef->name, $parent);
+
             foreach ($classDef->methods as $methodName => $methodDef) {
-                $method = new SOL25Method($methodDef->selectorName, $methodDef->body, $methodDef->body->params);
+                $method = new SOL25Method(
+                    $methodDef->selectorName,
+                    $methodDef->body,
+                    $methodDef->body->params
+                );
                 $class->addMethod($method);
             }
 
-            // Register class in scope
             $scope->registerClass($class->name, $class);
         }
 
