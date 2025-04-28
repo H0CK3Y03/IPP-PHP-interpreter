@@ -59,9 +59,9 @@ class Traverser
         $scope->registerClass('Block', $blockClass);
 
         // Create and register singleton objects
-        $scope->setSingleton('true', new SOL25Object($trueClass));
-        $scope->setSingleton('false', new SOL25Object($falseClass));
-        $scope->setSingleton('nil', new SOL25Object($nilClass));
+        $scope->storeSingleton('true', new SOL25Object($trueClass));
+        $scope->storeSingleton('false', new SOL25Object($falseClass));
+        $scope->storeSingleton('nil', new SOL25Object($nilClass));
     }
 
     /**
@@ -96,7 +96,7 @@ class Traverser
                     );
                 }
             } else {
-                $parent = $scope->getClass($classDef->parent);
+                $parent = $scope->fetchClass($classDef->parent);
             }
 
             $class = new SOL25Class($classDef->name, $parent);

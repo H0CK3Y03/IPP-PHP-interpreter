@@ -35,7 +35,7 @@ class SOL25Integer extends SOL25ObjectClass
         switch ($selectorName) {
             case 'new':
                 // Create a new Integer object with value 0
-                return new SOL25Object($scope->getClass($this->name), 0);
+                return new SOL25Object($scope->fetchClass($this->name), 0);
             case 'isNumber':
                 // Return true if it's a number
                 return $this->boolResult(true, $scope);
@@ -58,22 +58,22 @@ class SOL25Integer extends SOL25ObjectClass
             case 'plus:':
                 // Addition of the receiver value and sender value
                 $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
-                return new SOL25Object($scope->getClass('Integer'), $receiverVal + $senderVal);
+                return new SOL25Object($scope->fetchClass('Integer'), $receiverVal + $senderVal);
             case 'minus:':
                 // Subtraction of the receiver value and sender value
                 $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
-                return new SOL25Object($scope->getClass('Integer'), (int) $receiverVal - (int) $senderVal);
+                return new SOL25Object($scope->fetchClass('Integer'), (int) $receiverVal - (int) $senderVal);
             case 'multiplyBy:':
                 // Multiplication of the receiver value and sender value
                 $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
-                return new SOL25Object($scope->getClass('Integer'), (int) $receiverVal * (int) $senderVal);
+                return new SOL25Object($scope->fetchClass('Integer'), (int) $receiverVal * (int) $senderVal);
             case 'divBy:':
                 // Division of the receiver value and sender value, handles division by zero
                 $senderVal = $senderObjs[0]->evaluate($scope)->getAttr('__value__');
                 return $this->handleDivision($receiverVal, $senderVal, $scope);
             case 'asString':
                 // Convert the receiver value to a String object
-                return new SOL25Object($scope->getClass('String'), (string) $receiverVal);
+                return new SOL25Object($scope->fetchClass('String'), (string) $receiverVal);
             case 'asInteger':
                 // Return the receiver object as an Integer object
                 return $receiverObj;
@@ -95,7 +95,7 @@ class SOL25Integer extends SOL25ObjectClass
      */
     private function createNewIntegerObject(Scope $scope, int $value): SOL25Object
     {
-        return new SOL25Object($scope->getClass('Integer'), $value);
+        return new SOL25Object($scope->fetchClass('Integer'), $value);
     }
 
     /**
@@ -131,13 +131,13 @@ class SOL25Integer extends SOL25ObjectClass
         // Repeat the block receiverVal times
         for ($i = 1; $i <= $receiverVal; $i++) {
             // Create an iteration object
-            $iter = [new SOL25Object($scope->getClass('Integer'), $i)];
+            $iter = [new SOL25Object($scope->fetchClass('Integer'), $i)];
             // Evaluate the sender object for each iteration
             $this->lastResult = $this->evaluateSender($senderObjs[0], $scope, $iter);
         }
 
         // Return the last result or 'nil' if no result exists
-        return $this->lastResult ?? $scope->getSingleton('nil');
+        return $this->lastResult ?? $scope->fetchSingleton('nil');
     }
 
     /**

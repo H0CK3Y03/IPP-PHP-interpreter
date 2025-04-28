@@ -54,7 +54,7 @@ class Block
      */
     public function evaluate(Scope $scope, ?array $args = null): SOL25Object
     {
-        $scope->enterScope();
+        $scope->startNewScope();
 
         $this->validateargs($args);
 
@@ -62,9 +62,9 @@ class Block
 
         $lastResult = $this->executeInstructions($scope);
 
-        $scope->exitScope();
+        $scope->endCurrentScope();
 
-        return $lastResult ?? $scope->getSingleton('nil');
+        return $lastResult ?? $scope->fetchSingleton('nil');
     }
 
     /**
@@ -90,12 +90,12 @@ class Block
     {
         foreach ($this->params as $index => $paramName) {
             if ($args === null) {
-                $scope->addVar($paramName);
+                $scope->addVariable($paramName);
             }
             else {
                 $arg = $args[$index];
                 $value = ($arg instanceof SOL25Object) ? $arg : $arg->evaluate($scope);
-                $scope->setVar($paramName, $value);
+                $scope->assignVariable($paramName, $value);
             }
         }
     }

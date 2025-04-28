@@ -38,7 +38,7 @@ class SOL25Nil extends SOL25ObjectClass
         switch ($selectorName) {
             case 'new':
                 // Return the singleton 'nil' from the scope
-                return $scope->getSingleton('nil');
+                return $scope->fetchSingleton('nil');
 
             case 'identicalTo:':
                 // Compare classes for identity
@@ -50,7 +50,7 @@ class SOL25Nil extends SOL25ObjectClass
 
             case 'asString':
                 // Return a 'String' object with 'nil'
-                return new SOL25Object($scope->getClass('String'), 'nil');
+                return new SOL25Object($scope->fetchClass('String'), 'nil');
 
             case 'isNumber':
             case 'isString':

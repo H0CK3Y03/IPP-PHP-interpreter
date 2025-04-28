@@ -79,7 +79,7 @@ class SOL25Class
         switch ($selectorName) {
             case 'whileTrue':
                 // Assuming a specific behavior for 'whileTrue'
-                return new SOL25Object($scope->getClass('String'), 'nil');
+                return new SOL25Object($scope->fetchClass('String'), 'nil');
             case 'isNumber':
                 return $this->boolResult(false, $scope); // Assuming 'false' for this case
             case 'isString':
@@ -89,7 +89,7 @@ class SOL25Class
             case 'isNil':
                 return $this->boolResult(false, $scope);
             default:
-                return $scope->getSingleton('nil'); // Default: return the 'nil' singleton
+                return $scope->fetchSingleton('nil'); // Default: return the 'nil' singleton
         }
     }
 
@@ -102,6 +102,6 @@ class SOL25Class
      */
     private function boolResult(bool $value, Scope $scope): SOL25Object
     {
-        return new SOL25Object($scope->getClass('Boolean'), $value ? 'true' : 'false');
+        return new SOL25Object($scope->fetchClass('Boolean'), $value ? 'true' : 'false');
     }
 }

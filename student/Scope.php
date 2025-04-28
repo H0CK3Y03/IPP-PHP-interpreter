@@ -11,19 +11,18 @@ use IPP\Student\Exception;
 
 class Scope
 {
-    public string $input;
-
     /** @var array<int, array<string, array<string, mixed>>> */
-    private array $scopes = [];
+    private array $scopesStack = [];
 
     /** @var array<string, SOL25Class> */
-    private array $classes = [];
+    private array $classDefinitions = [];
 
     /** @var array<string, SOL25Object> */
-    private array $singletons = [];
+    private array $singletonObjects = [];
 
     private SOL25Object $self;
     private SOL25Object $super;
+    public string $input;
     public StreamWriter $stdout;
 
     public function __construct(string $input = '')
@@ -33,89 +32,76 @@ class Scope
     }
 
     /**
-     * Start a new variable scope.
-     * Pushes a new empty scope onto the scope stack.
+     * Initialize a new variable scope.
+     * This method pushes an empty scope onto the stack.
      */
-    public function enterScope(): void
+    public function startNewScope(): void
     {
-        array_push($this->scopes, []);
+        array_push($this->scopesStack, []);
     }
 
     /**
      * End the current variable scope.
-     * Pops the top scope from the scope stack.
-     * Throws an exception if no scope is available to exit.
+     * If no scope is available, an exception is thrown.
      */
-    public function exitScope(): void
+    public function endCurrentScope(): void
     {
-        if (count($this->scopes) > 0) {
-            array_pop($this->scopes);
-        } else {
+        if (empty($this->scopesStack)) {
             throw new Exception('No scope to exit.', ReturnCode::INTERNAL_ERROR);
         }
+        array_pop($this->scopesStack);
     }
 
     /**
-     * Add a variable to the current scope.
-     * Throws an exception if no active scope is available.
+     * Add a new variable to the current scope.
+     * An exception is thrown if no scope is active.
      */
-    public function addVar(string $varName): void
+    public function addVariable(string $varName): void
     {
-        if (count($this->scopes) > 0) {
-            $this->scopes[count($this->scopes) - 1][$varName] = ['expression' => null];
-        } else {
-            throw new Exception('No active scope to add a variable to.', ReturnCode::INTERNAL_ERROR);
-        }
+        $this->ensureScopeIsActive();
+        $this->scopesStack[count($this->scopesStack) - 1][$varName] = ['expression' => null];
     }
 
     /**
-     * Set a variable's value in the scope.
-     * Searches from the innermost scope to the outer scopes.
-     * Throws an exception if the variable is not found.
+     * Assign a value to a variable, searching for it from inner to outer scopes.
+     * Throws an exception if the variable cannot be found.
      */
-    public function setVar(string $varName, SOL25Object $expr): void
+    public function assignVariable(string $varName, SOL25Object $value): void
     {
-        $count = count($this->scopes);
+        $count = count($this->scopesStack);
         while ($count-- > 0) {
-            $scope = &$this->scopes[$count];
-            if (array_key_exists($varName, $scope)) {
-                $scope[$varName]['expression'] = $expr;
+            $scope = &$this->scopesStack[$count];
+            if (isset($scope[$varName])) {
+                $scope[$varName]['expression'] = $value;
                 return;
             }
         }
 
-        // If variable not found, set it in the current scope
-        if (count($this->scopes) > 0) {
-            $this->scopes[count($this->scopes) - 1][$varName] = ['expression' => $expr];
-        } else {
-            throw new Exception("Error: Unknown '$varName' variable\n", ReturnCode::PARSE_UNDEF_ERROR);
-        }
+        $this->addVariableInCurrentScope($varName, $value);
     }
 
     /**
-     * Get the value of a variable.
-     * Searches from the innermost scope to the outer scopes.
-     * Throws an exception if the variable is not found.
+     * Retrieve the value of a variable from the innermost to outermost scope.
+     * Throws an exception if the variable cannot be found.
      */
-    public function getVar(string $varName): ?SOL25Object
+    public function fetchVariable(string $varName): ?SOL25Object
     {
-        $count = count($this->scopes);
-        while ($count-- > 0) {
-            $scope = $this->scopes[$count];
-            if (array_key_exists($varName, $scope)) {
+        foreach (array_reverse($this->scopesStack) as $scope) {
+            if (isset($scope[$varName])) {
                 return $scope[$varName]['expression'];
             }
         }
-        throw new Exception("Error: Unknown '$varName' variable\n", ReturnCode::PARSE_UNDEF_ERROR);
+
+        throw new Exception("Unknown variable: '$varName'.", ReturnCode::PARSE_UNDEF_ERROR);
     }
 
     /**
-     * Check if a variable exists in the current scope or any outer scope.
+     * Checks whether a variable exists in any of the scopes.
      */
-    public function hasVar(string $varName): bool
+    public function doesVariableExist(string $varName): bool
     {
-        foreach (array_reverse($this->scopes) as $scope) {
-            if (array_key_exists($varName, $scope)) {
+        foreach (array_reverse($this->scopesStack) as $scope) {
+            if (isset($scope[$varName])) {
                 return true;
             }
         }
@@ -123,52 +109,52 @@ class Scope
     }
 
     /**
-     * Register a class definition in the scope.
+     * Register a class in the scope.
      */
-    public function registerClass(string $name, SOL25Class $class): void
+    public function registerClass(string $className, SOL25Class $class): void
     {
-        $this->classes[$name] = $class;
+        $this->classDefinitions[$className] = $class;
     }
 
     /**
-     * Get a class definition by name.
+     * Fetch a class by its name from the registered class definitions.
      * Throws an exception if the class is not registered.
      */
-    public function getClass(string $name): SOL25Class
+    public function fetchClass(string $className): SOL25Class
     {
-        if (!isset($this->classes[$name])) {
-            throw new Exception("Class '$name' not registered.", ReturnCode::INTERPRET_TYPE_ERROR);
+        if (!isset($this->classDefinitions[$className])) {
+            throw new Exception("Class '$className' not registered.", ReturnCode::INTERPRET_TYPE_ERROR);
         }
-        return $this->classes[$name];
+        return $this->classDefinitions[$className];
     }
 
     /**
-     * Set a singleton object in the scope.
+     * Store a singleton object in the scope.
      */
-    public function setSingleton(string $name, SOL25Object $obj): void
+    public function storeSingleton(string $singletonName, SOL25Object $object): void
     {
-        $this->singletons[$name] = $obj;
+        $this->singletonObjects[$singletonName] = $object;
     }
 
     /**
-     * Get a singleton object by name.
+     * Retrieve a singleton object by its name.
      * Returns null if the singleton doesn't exist.
      */
-    public function getSingleton(string $name): ?SOL25Object
+    public function fetchSingleton(string $singletonName): ?SOL25Object
     {
-        return $this->singletons[$name] ?? null;
+        return $this->singletonObjects[$singletonName] ?? null;
     }
 
     /**
-     * Set the $self object, representing the current object.
+     * Set the current object represented by $self.
      */
-    public function setSelf(SOL25Object $obj): void
+    public function setSelf(SOL25Object $self): void
     {
-        $this->self = $obj;
+        $this->self = $self;
     }
 
     /**
-     * Get the $self object.
+     * Get the current object represented by $self.
      */
     public function getSelf(): SOL25Object
     {
@@ -176,18 +162,39 @@ class Scope
     }
 
     /**
-     * Set the $super object, representing the superclass.
+     * Set the superclass object represented by $super.
      */
-    public function setSuper(SOL25Object $obj): void
+    public function setSuper(SOL25Object $super): void
     {
-        $this->super = $obj;
+        $this->super = $super;
     }
 
     /**
-     * Get the $super object.
+     * Get the superclass object represented by $super.
      */
     public function getSuper(): SOL25Object
     {
         return $this->super;
+    }
+
+    /**
+     * Ensures that a scope is active before proceeding.
+     * Throws an exception if no scope is active.
+     */
+    private function ensureScopeIsActive(): void
+    {
+        if (empty($this->scopesStack)) {
+            throw new Exception('No active scope to add a variable.', ReturnCode::INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * Adds a variable to the current scope, in case it was not found in any outer scopes.
+     * Throws an exception if no scope is active.
+     */
+    private function addVariableInCurrentScope(string $varName, SOL25Object $value): void
+    {
+        $this->ensureScopeIsActive();
+        $this->scopesStack[count($this->scopesStack) - 1][$varName] = ['expression' => $value];
     }
 }

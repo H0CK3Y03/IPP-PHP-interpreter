@@ -41,8 +41,8 @@ class Variable
         return match (true) {
             $this->name === 'self' => $scope->getSelf(),
             $this->name === 'super' => $scope->getSuper(),
-            ctype_upper($this->name[0]) => $scope->getClass($this->name),
-            default => $scope->getVar($this->name),
+            ctype_upper($this->name[0]) => $scope->fetchClass($this->name),
+            default => $scope->fetchVariable($this->name),
         };
     }
 }

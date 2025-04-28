@@ -21,6 +21,37 @@ class Program
      */
     public function addClass(ClassDefinition $class): void
     {
+        $this->setClass($class);
+    }
+
+    /**
+     * Sets the class definition in the program.
+     *
+     * @param ClassDefinition $class
+     */
+    private function setClass(ClassDefinition $class): void
+    {
         $this->classes[$class->name] = $class;
+    }
+
+    /**
+     * Gets the list of all class definitions.
+     *
+     * @return array<string, ClassDefinition> List of class definitions.
+     */
+    public function getClasses(): array
+    {
+        return $this->classes;
+    }
+
+    /**
+     * Gets a class definition by name.
+     *
+     * @param string $className
+     * @return ClassDefinition|null The class definition, or null if not found.
+     */
+    public function getClass(string $className): ?ClassDefinition
+    {
+        return $this->classes[$className] ?? null;
     }
 }

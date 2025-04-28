@@ -30,7 +30,7 @@ class SOL25Block extends SOL25ObjectClass
         switch ($selectorName) {
             case 'whileTrue':
                 // Assuming 'whileTrue' always returns a nil String
-                return new SOL25Object($scope->getClass('String'), 'nil');
+                return new SOL25Object($scope->fetchClass('String'), 'nil');
             case 'isBlock':
                 return $this->boolResult(true, $scope);
             case 'isNumber':

@@ -25,7 +25,7 @@ class SOL25False extends SOL25ObjectClass
 
         switch ($selectorName) {
             case 'new':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             case 'identicalTo:':
                 // Compare the class for identicality
                 return $this->boolResult($receiverObj->class === $senderObj[0]->evaluate($scope)->class, $scope);
@@ -34,23 +34,23 @@ class SOL25False extends SOL25ObjectClass
                 $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
                 return $this->boolResult($receiverVal == $senderVal, $scope);
             case 'asString':
-                return new SOL25Object($scope->getClass('String'), '');
+                return new SOL25Object($scope->fetchClass('String'), '');
             case 'isNumber':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             case 'isString':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             case 'isBlock':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             case 'isNil':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             case 'not':
-                return $scope->getSingleton('true');
+                return $scope->fetchSingleton('true');
             case 'and:':
                 // Short-circuit logic for 'and'
-                return $receiverVal ? $senderObj[0]->evaluate($scope) : $scope->getSingleton('false');
+                return $receiverVal ? $senderObj[0]->evaluate($scope) : $scope->fetchSingleton('false');
             case 'or:':
                 // Short-circuit logic for 'or'
-                return $receiverVal ? $scope->getSingleton('true') : $senderObj[0]->evaluate($scope);
+                return $receiverVal ? $scope->fetchSingleton('true') : $senderObj[0]->evaluate($scope);
             case 'ifTrue:ifFalse:':
                 if ($receiverObj->class instanceof SOL25True) {
                     return $senderObj[0]->evaluate($scope);
@@ -59,7 +59,7 @@ class SOL25False extends SOL25ObjectClass
                     return $senderObj[1]->evaluate($scope);
                 }
                 // If neither case matches, throw an exception
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             default:
                 throw new Exception('Method not found', ReturnCode::INTERPRET_TYPE_ERROR);
         }

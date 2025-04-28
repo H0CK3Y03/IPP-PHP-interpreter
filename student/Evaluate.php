@@ -30,7 +30,7 @@ class Evaluate
     public function evaluate(): void
     {
         // Retrieve the 'Main' class from the scope
-        $mainClass = $this->scope->getClass('Main');
+        $mainClass = $this->scope->fetchClass('Main');
 
         // Retrieve the 'run' method from the 'Main' class
         $mainMethod = $mainClass->getMethod('run');

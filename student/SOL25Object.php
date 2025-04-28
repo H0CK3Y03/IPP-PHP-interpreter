@@ -87,7 +87,7 @@ class SOL25Object
         }
 
         // Return 'nil' if method type is not recognized
-        return $scope->getSingleton('nil');
+        return $scope->fetchSingleton('nil');
     }
 
     /**
@@ -114,7 +114,7 @@ class SOL25Object
 
         // Handle 'from:' selector for creating a new SOL25Object from sender value
         if (str_starts_with($selector, 'from:')) {
-            return new SOL25Object($scope->getClass($this->class->name), $senderObj[0]->evaluate($scope)->getAttr('__value__'));
+            return new SOL25Object($scope->fetchClass($this->class->name), $senderObj[0]->evaluate($scope)->getAttr('__value__'));
         }
 
         // Handle 'new' selector to return a new instance of the class
@@ -148,17 +148,17 @@ class SOL25Object
     {
         switch ($this->class->name) {
             case 'False':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
             case 'True':
-                return $scope->getSingleton('true');
+                return $scope->fetchSingleton('true');
             case 'Nil':
-                return $scope->getSingleton('nil');
+                return $scope->fetchSingleton('nil');
             case 'String':
-                return new SOL25Object($scope->getClass('String'), '');
+                return new SOL25Object($scope->fetchClass('String'), '');
             case 'Integer':
-                return new SOL25Object($scope->getClass('Integer'), 0);
+                return new SOL25Object($scope->fetchClass('Integer'), 0);
             default:
-                return new SOL25Object($scope->getClass($this->class->name), null);
+                return new SOL25Object($scope->fetchClass($this->class->name), null);
         }
     }
 

@@ -89,7 +89,7 @@ class SOL25ObjectClass extends SOL25Class
      */
     private function convertToString(Scope $scope): SOL25Object
     {
-        return new SOL25Object($scope->getClass('String'), '');
+        return new SOL25Object($scope->fetchClass('String'), '');
     }
 
     /**
@@ -102,6 +102,6 @@ class SOL25ObjectClass extends SOL25Class
      */
     public function boolResult(bool $val, Scope $scope): SOL25Object
     {
-        return $scope->getSingleton($val ? 'true' : 'false');
+        return $scope->fetchSingleton($val ? 'true' : 'false');
     }
 }

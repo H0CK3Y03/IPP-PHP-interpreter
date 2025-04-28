@@ -67,7 +67,7 @@ class SOL25String extends SOL25ObjectClass
      */
     private function createNewStringObject(Scope $scope): SOL25Object
     {
-        return new SOL25Object($scope->getClass($this->name), '');
+        return new SOL25Object($scope->fetchClass($this->name), '');
     }
     /**
      * Compares the receiver object to the sender object for identity.
@@ -106,7 +106,7 @@ class SOL25String extends SOL25ObjectClass
      */
     private function readFromInput(Scope $scope): SOL25Object
     {
-        return new SOL25Object($scope->getClass('String'), (string) $scope->input);
+        return new SOL25Object($scope->fetchClass('String'), (string) $scope->input);
     }
     /**
      * Converts the string value to an Integer, or returns Nil if it is not a valid integer.
@@ -119,9 +119,9 @@ class SOL25String extends SOL25ObjectClass
     private function convertToInteger(string $value, Scope $scope): SOL25Object
     {
         if (filter_var($value, FILTER_VALIDATE_INT) !== false) {
-            return new SOL25Object($scope->getClass('Integer'), (int) $value);
+            return new SOL25Object($scope->fetchClass('Integer'), (int) $value);
         } else {
-            return $scope->getSingleton('nil');
+            return $scope->fetchSingleton('nil');
         }
     }
     /**
@@ -138,9 +138,9 @@ class SOL25String extends SOL25ObjectClass
         $senderVal = $senderObj[0]->evaluate($scope)->getAttr('__value__');
 
         if ($senderObj[0]->evaluate($scope)->class == $receiverObj->class) {
-            return new SOL25Object($scope->getClass('String'), $receiverObj->getAttr('__value__') . $senderVal);
+            return new SOL25Object($scope->fetchClass('String'), $receiverObj->getAttr('__value__') . $senderVal);
         } else {
-            return $scope->getSingleton('nil');
+            return $scope->fetchSingleton('nil');
         }
     }
     /**
@@ -158,13 +158,13 @@ class SOL25String extends SOL25ObjectClass
         $endIdx = $senderObj[1]->evaluate($scope)->getAttr('__value__');
 
         if ($startIdx <= 0 || $endIdx <= 0) {
-            return $scope->getSingleton('nil');
+            return $scope->fetchSingleton('nil');
         }
 
         if ($endIdx - $startIdx <= 0) {
-            return new SOL25Object($scope->getClass('String'), '');
+            return new SOL25Object($scope->fetchClass('String'), '');
         }
 
-        return new SOL25Object($scope->getClass('String'), substr($receiverObj->getAttr('__value__'), $startIdx - 1, $endIdx - $startIdx));
+        return new SOL25Object($scope->fetchClass('String'), substr($receiverObj->getAttr('__value__'), $startIdx - 1, $endIdx - $startIdx));
     }
 }

@@ -46,14 +46,14 @@ class Assignment
         }
 
         // Ensure the variable exists in the scope
-        if (!$scope->hasVar($this->var)) {
-            $scope->addVar($this->var);
+        if (!$scope->doesVariableExist($this->var)) {
+            $scope->addVariable($this->var);
         }
 
         // Evaluate the expression and assign its value to the variable
         $exprVal = $this->evaluateExpression($scope);
         if ($exprVal !== null) {
-            $scope->setVar($this->var, $exprVal);
+            $scope->assignVariable($this->var, $exprVal);
         }
 
         return $exprVal;
@@ -68,7 +68,7 @@ class Assignment
     private function evaluateExpression(Scope $scope): ?SOL25Object
     {
         if ($this->expr instanceof Block) {
-            $blockObj = new SOL25Object($scope->getClass('Block'), $this->expr);
+            $blockObj = new SOL25Object($scope->fetchClass('Block'), $this->expr);
             return $blockObj;
         }
 

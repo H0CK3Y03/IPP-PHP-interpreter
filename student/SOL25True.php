@@ -31,7 +31,7 @@ class SOL25True extends SOL25ObjectClass
 
         switch ($selectorName) {
             case 'new':
-                return $scope->getSingleton('true');
+                return $scope->fetchSingleton('true');
 
             case 'identicalTo:':
                 return $this->evaluateIdenticalTo($receiverObj, $senderObj, $scope);
@@ -40,20 +40,20 @@ class SOL25True extends SOL25ObjectClass
                 return $this->evaluateEqualTo($receiverVal, $senderObj, $scope);
 
             case 'asString':
-                return new SOL25Object($scope->getClass('String'), '');
+                return new SOL25Object($scope->fetchClass('String'), '');
 
             case 'isNumber':
             case 'isString':
             case 'isBlock':
             case 'isNil':
             case 'not':
-                return $scope->getSingleton('false');
+                return $scope->fetchSingleton('false');
 
             case 'and:':
                 return $senderObj[0]->evaluate($scope);
 
             case 'or:':
-                return $scope->getSingleton('true');
+                return $scope->fetchSingleton('true');
 
             case 'ifTrue:ifFalse:':
                 return $this->evaluateIfTrueIfFalse($receiverObj, $senderObj, $scope);

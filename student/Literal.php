@@ -49,12 +49,12 @@ class Literal
     public function evaluate(Scope $scope): SOL25Object
     {
         return match ($this->type) {
-            'Integer' => new SOL25Object($scope->getClass('Integer'), (int) $this->value),
-            'String'  => new SOL25Object($scope->getClass('String'), (string) $this->value),
-            'True'    => $scope->getSingleton('true'),
-            'False'   => $scope->getSingleton('false'),
-            'Nil'     => $scope->getSingleton('nil'),
-            'class'   => new SOL25Object($scope->getClass((string) $this->value), null),
+            'Integer' => new SOL25Object($scope->fetchClass('Integer'), (int) $this->value),
+            'String'  => new SOL25Object($scope->fetchClass('String'), (string) $this->value),
+            'True'    => $scope->fetchSingleton('true'),
+            'False'   => $scope->fetchSingleton('false'),
+            'Nil'     => $scope->fetchSingleton('nil'),
+            'class'   => new SOL25Object($scope->fetchClass((string) $this->value), null),
             default   => throw new Exception('Literal not found', ReturnCode::INTERPRET_TYPE_ERROR),
         };
     }
