@@ -1,0 +1,397 @@
+@startuml
+' Classes
+class StreamWriter {
+  -resource $stream
+  +__construct(resource)
+  +writeString(string)
+  +writeInt(int)
+  +writeBool(bool)
+  +writeFloat(float)
+}
+
+abstract class AbstractInterpreter {
+  -SourceReader $source
+  -InputReader $input
+  -OutputWriter $stdout
+  -OutputWriter $stderr
+  -Settings $settings
+  +__construct(Settings)
+  +init()
+  +execute(): int
+}
+
+class Interpreter {
+  +execute(): int
+  -prepareScope()
+  -evaluateProgram(mixed)
+  -handleError(IPPException)
+}
+
+class ReturnCode {
+  +const OK = 0
+  +const INPUT_FILE_ERROR = 11
+  +const INVALID_SOURCE_STRUCTURE_ERROR
+  +const INTERPRET_TYPE_ERROR
+  +const PARSE_UNDEF_ERROR
+  +const INTERPRET_DNU_ERROR
+  +const INTERPRET_VALUE_ERROR
+}
+
+class Engine {
+  +run(): int
+  -getSettings(): Settings
+  -getInterpreter(Settings): AbstractInterpreter
+}
+
+class Settings {
+  -array $longOptions
+  -bool $help
+  -string $source
+  -string $input
+  +__construct()
+  +processArgs()
+  +getHelpString(): string
+  +isHelp(): bool
+  +getSourceReader(): SourceReader
+  +getInputReader(): InputReader
+  +getStdOutWriter(): OutputWriter
+  +getStdErrWriter(): OutputWriter
+}
+
+class FileInputReader {
+  -string $file
+  -resource $resource
+  +__construct(string)
+  +readString(): ?string
+  +readInt(): ?int
+  +readBool(): ?bool
+  +readFloat(): ?float
+}
+
+class FileSourceReader {
+  -string $file
+  -string $content
+  +__construct(string)
+  +getDOMDocument(): DOMDocument
+}
+
+interface SourceReader {
+  +getDOMDocument(): DOMDocument
+}
+
+interface OutputWriter {
+  +writeString(string)
+  +writeInt(int)
+  +writeBool(bool)
+  +writeFloat(float)
+}
+
+interface InputReader {
+  +readString(): ?string
+  +readInt(): ?int
+  +readBool(): ?bool
+  +readFloat(): ?float
+}
+
+class IPPException {
+  -bool $showTrace
+  +__construct(string, int, ?Throwable, bool)
+  +getReport(): string
+}
+
+class Exception {
+  -int $returnCode
+  +__construct(string, int, ?Throwable)
+  +getReturnCode(): int
+}
+
+class Program {
+  -array<string, ClassDefinition> $classes
+  +addClass(ClassDefinition)
+  +getClasses(): array
+  +getClass(string): ?ClassDefinition
+}
+
+class ClassDefinition {
+  -string $name
+  -string $parent
+  -array<string, Method> $methods
+  +__construct(string, string)
+  +addMethod(Method)
+  +getMethods(): array
+  +getName(): string
+  +getParent(): string
+}
+
+class SOL25Class {
+  -string $name
+  -?SOL25Class $parent
+  -array<string> $builtInMethods
+  -array<string, SOL25Method> $userDefinedMethods
+  +__construct(string, ?SOL25Class)
+  +addBuiltInMethod(string)
+  +addMethod(SOL25Method)
+  +getMethod(string): ?array
+  +isSubclassOrSame(SOL25Class): bool
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25ObjectClass {
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+  +boolResult(bool, Scope): SOL25Object
+}
+
+class SOL25Block {
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25True {
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25False {
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25Integer {
+  -?SOL25Object $lastResult
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25String {
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25Nil {
+  +switchMethod(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25Object {
+  -SOL25Class $class
+  -array<string, mixed> $attr
+  +__construct(SOL25Class, ?mixed)
+  +setAttr(string, mixed)
+  +getAttr(string): ?mixed
+  +sendMessage(SOL25Object, string, Scope, ?array): SOL25Object
+}
+
+class SOL25Method {
+  -string $name
+  -Block $block
+  -array<string, string> $params
+  +__construct(string, Block, array)
+  +setName(string)
+  +getName(): string
+  +setBlock(Block)
+  +getBlock(): Block
+  +setParameters(array)
+  +getParameterNames(): array
+  +getParameterTypes(): array
+}
+
+class Scope {
+  -array $scopesStack
+  -array<string, SOL25Class> $classDefinitions
+  -array<string, SOL25Object> $singletonObjects
+  -SOL25Object $self
+  -SOL25Object $super
+  -string $input
+  -StreamWriter $stdout
+  +__construct(string)
+  +startNewScope()
+  +endCurrentScope()
+  +addVariable(string)
+  +assignVariable(string, SOL25Object)
+  +fetchVariable(string): ?SOL25Object
+  +doesVariableExist(string): bool
+  +registerClass(string, SOL25Class)
+  +fetchClass(string): SOL25Class
+  +storeSingleton(string, SOL25Object)
+  +fetchSingleton(string): ?SOL25Object
+  +setSelf(SOL25Object)
+  +getSelf(): SOL25Object
+  +setSuper(SOL25Object)
+  +getSuper(): SOL25Object
+}
+
+class Message {
+  -Expression $receiver
+  -string $messageName
+  -array $arguments
+  +__construct(Expression, string, array)
+  +evaluate(Scope): mixed
+}
+
+class Literal {
+  -string $type
+  -string|int $value
+  +__construct(string, string|int)
+  +evaluate(Scope): SOL25Object
+}
+
+class Variable {
+  -string $name
+  +__construct(string)
+  +evaluate(Scope): SOL25Class|SOL25Object|null
+}
+
+class Method {
+  -string $selectorName
+  -Block $block
+  +__construct(string, Block)
+  +getSelectorName(): string
+  +getBlock(): Block
+}
+
+class Parser {
+  +createProgram(DOMDocument): Program
+  +createBlock(DOMElement): Block
+  +createExpression(DOMElement): Block|Literal|Message|Variable
+}
+
+class Traverser {
+  +initialize(Scope)
+  +traverseProgram(Program, string): Scope
+}
+
+class Assignment {
+  -string $var
+  -Expression $expr
+  +__construct(string, Expression)
+  +evaluate(Scope): SOL25Object
+}
+
+class Block {
+  -int $paramCount
+  -array<string> $params
+  -array<Assignment> $instructions
+  +__construct(int)
+  +evaluate(Scope, ?array): SOL25Object
+}
+
+class Evaluate {
+  -Scope $scope
+  +__construct(Scope)
+  +evaluate()
+}
+
+' Relationships
+' Inheritance
+Interpreter --|> AbstractInterpreter
+SOL25ObjectClass --|> SOL25Class
+SOL25Block --|> SOL25ObjectClass
+SOL25True --|> SOL25ObjectClass
+SOL25False --|> SOL25ObjectClass
+SOL25Integer --|> SOL25ObjectClass
+SOL25String --|> SOL25ObjectClass
+SOL25Nil --|> SOL25ObjectClass
+Exception --|> IPPException
+
+' Interface Implementation
+StreamWriter ..|> OutputWriter
+FileInputReader ..|> InputReader
+FileSourceReader ..|> SourceReader
+
+' Composition
+AbstractInterpreter *-- "1" Settings
+AbstractInterpreter *-- "1" SourceReader
+AbstractInterpreter *-- "1" InputReader
+AbstractInterpreter *-- "2" OutputWriter
+Program *-- "*" ClassDefinition
+ClassDefinition *-- "*" Method
+Method *-- "1" Block
+Block *-- "*" Assignment
+SOL25Class *-- "*" SOL25Method
+Scope *-- "*" SOL25Class
+Scope *-- "*" SOL25Object
+Message *-- "1" Expression
+Assignment *-- "1" Expression
+
+' Association
+Engine -- Settings
+Engine -- AbstractInterpreter
+Engine -- Interpreter
+Settings -- FileSourceReader
+Settings -- FileInputReader
+Settings -- StreamWriter
+Scope -- StreamWriter
+Traverser -- Scope
+Traverser -- Program
+Parser -- Program
+Parser -- ClassDefinition
+Parser -- Method
+Parser -- Block
+Parser -- Message
+Parser -- Literal
+Parser -- Variable
+Interpreter -- Parser
+Interpreter -- Traverser
+Interpreter -- Evaluate
+Evaluate -- Scope
+SOL25Object -- SOL25Class
+Method -- Block
+SOL25Method -- Block
+
+' Dependency
+Interpreter ..> IPPException
+Interpreter ..> Exception
+Interpreter ..> DOMDocument
+Interpreter ..> ReturnCode
+FileSourceReader ..> DOMDocument
+StreamWriter ..> Exception
+FileInputReader ..> Exception
+FileSourceReader ..> Exception
+Engine ..> IPPException
+Engine ..> Exception
+Settings ..> Exception
+IPPException ..> ReturnCode
+Exception ..> ReturnCode
+Parser ..> DOMDocument
+Parser ..> Exception
+Message ..> Scope
+Message ..> SOL25Object
+Literal ..> SOL25Object
+Literal ..> Scope
+Variable ..> Scope
+Variable ..> SOL25Object
+Variable ..> SOL25Class
+Block ..> Scope
+Block ..> SOL25Object
+Block ..> Exception
+Assignment ..> Scope
+Assignment ..> SOL25Object
+SOL25Object ..> Scope
+SOL25Object ..> SOL25Method
+SOL25Object ..> Exception
+SOL25Class ..> Scope
+SOL25Class ..> SOL25Object
+SOL25ObjectClass ..> Scope
+SOL25ObjectClass ..> SOL25Object
+SOL25ObjectClass ..> Exception
+SOL25Block ..> Scope
+SOL25Block ..> SOL25Object
+SOL25Block ..> Exception
+SOL25True ..> Scope
+SOL25True ..> SOL25Object
+SOL25True ..> Exception
+SOL25False ..> Scope
+SOL25False ..> SOL25Object
+SOL25False ..> Exception
+SOL25Integer ..> Scope
+SOL25Integer ..> SOL25Object
+SOL25Integer ..> Exception
+SOL25String ..> Scope
+SOL25String ..> SOL25Object
+SOL25String ..> Exception
+SOL25Nil ..> Scope
+SOL25Nil ..> SOL25Object
+SOL25Nil ..> Exception
+Traverser ..> SOL25Object
+Traverser ..> SOL25Class
+Traverser ..> Exception
+Evaluate ..> SOL25Class
+Evaluate ..> SOL25Object
+Evaluate ..> SOL25Method
+Evaluate ..> Exception
+
+@enduml
